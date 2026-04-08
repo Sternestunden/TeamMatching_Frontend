@@ -1,8 +1,25 @@
 {
-  "hash": "aa269a99",
-  "configHash": "0bee9e37",
-  "lockfileHash": "e3b0c442",
-  "browserHash": "3595f374",
-  "optimized": {},
-  "chunks": {}
+  "hash": "0ad28955",
+  "configHash": "d021af6d",
+  "lockfileHash": "371d8943",
+  "browserHash": "6d3b55c7",
+  "optimized": {
+    "moment": {
+      "src": "../../../../../node_modules/moment/dist/moment.js",
+      "file": "moment.js",
+      "fileHash": "318e0430",
+      "needsInterop": false
+    },
+    "uview-plus": {
+      "src": "../../../../../node_modules/uview-plus/index.js",
+      "file": "uview-plus.js",
+      "fileHash": "121e6719",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-NAVY3LVQ": {
+      "file": "chunk-NAVY3LVQ.js"
+    }
+  }
 }
