@@ -1,0 +1,603 @@
+<template>
+  <view class="user-page">
+    
+    <!-- 顶部个人信息卡片 -->
+    <UserInfo
+      :user-info="userInfo"
+      @upload-avatar="onUploadAvatar"
+      @edit="goProfile"
+      @show-auth="openAuthInfo"
+    />
+
+    <!-- 我的项目 -->
+    <view class="card section-card">
+      <view class="section-header">
+        <view class="section-icon section-icon-doc"></view>
+        <text class="section-title">我的项目</text>
+      </view>
+      <view class="divider"></view>
+      <view class="section-list">
+        <view class="list-item" @tap="goMyProjects('launched')">
+          <view class="item-left">
+            <view class="item-icon-circle">
+              <text class="item-icon-text">发</text>
+            </view>
+            <text class="item-text">我发起的项目</text>
+          </view>
+          <text class="item-arrow">›</text>
+        </view>
+        <view class="list-item" @tap="goMyProjects('joined')">
+          <view class="item-left">
+            <view class="item-icon-circle">
+              <text class="item-icon-text">加</text>
+            </view>
+            <text class="item-text">我加入的项目</text>
+          </view>
+          <text class="item-arrow">›</text> 
+        </view>
+        <view class="list-item disabled" @tap="goMyProjects('darct')">
+          <view class="item-left">
+            <view class="item-icon-circle item-icon-lock">
+              <text class="item-icon-text">草</text>
+            </view>
+            <text class="item-text">草稿箱</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 我的简历 / 技能树 -->
+    <SkillTags
+      :skills="skills"
+      @add="openSkillModal"
+      @view="onViewSkill"
+      @delete="onDeleteSkill" ></SkillTags>
+
+    <!-- 系统设置 / 反馈建议 -->
+    <view class="card section-card">
+      <view class="section-list">
+        <view class="list-item" @tap="goSettings">
+          <view class="item-left">
+            <view class="item-icon-circle item-icon-gear"></view>
+            <text class="item-text">系统设置</text>
+          </view>
+          <text class="item-arrow">›</text>
+        </view>
+        <view class="divider"></view>
+        <view class="list-item" @tap="goFeedback">
+          <view class="item-left">
+            <view class="item-icon-circle item-icon-mail"></view>
+            <text class="item-text">反馈建议</text>
+          </view>
+          <text class="item-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 身份认证信息弹窗 -->
+    <view v-if="showAuthInfo" class="modal-mask" @tap="closeAuthInfo">
+      <view class="modal-container" @tap.stop>
+        <view class="modal-header">
+          <text class="modal-title">个人信息</text>
+          <text class="modal-close" @tap="closeAuthInfo">✕</text>
+        </view>
+        <view class="modal-body">
+          <view class="modal-row">
+            <text class="modal-label">姓名：</text>
+            <text class="modal-value">{{ authInfo.name }}</text>
+          </view>
+          <view class="modal-row">
+            <text class="modal-label">学号：</text>
+            <text class="modal-value">{{ authInfo.studentId }}</text>
+          </view>
+          <view class="modal-row">
+            <text class="modal-label">校园邮箱：</text>
+            <text class="modal-value">{{ authInfo.campusEmail }}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 添加技能弹窗 -->
+    <view v-if="showSkillModal" class="modal-mask" @tap="closeSkillModal">
+      <view class="modal-container" @tap.stop>
+        <view class="modal-header">
+          <text class="modal-title">添加技能 / 经历</text>
+          <text class="modal-close" @tap="closeSkillModal">✕</text>
+        </view>
+        <view class="modal-body">
+          <view class="form-item">
+            <text class="form-label">技术栈（如Python, C++等，10字以内）</text>
+            <input
+              class="form-input"
+              type="text"
+              v-model="skillForm.stack"
+              placeholder="请输入"
+              maxlength="10"
+            />
+          </view>
+          <view class="form-item">
+            <text class="form-label">相关项目经历</text>
+            <textarea
+              class="form-textarea"
+              v-model="skillForm.experience"
+              placeholder="请输入"
+              auto-height
+            />
+          </view>
+        </view>
+        <view class="modal-footer">
+          <button class="btn btn-cancel" @tap="closeSkillModal">取消</button>
+          <button class="btn btn-primary" @tap="confirmAddSkill">确认添加</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import UserInfo from '../../components/user/UserInfo.vue'
+import SkillTags from '../../components/user/SkillTags.vue'
+
+export default {
+  components: {
+    UserInfo,
+    SkillTags
+  },
+  data() {
+    return {
+      userInfo: {
+        name: '王小明',
+        grade: '25级',
+        college: '软件工程学院'
+      },
+      authInfo: {
+        name: '张伟',
+        studentId: '102XXXXXXX',
+        campusEmail: 'xxx@stu.ecnu.cn'
+      },
+      skills: [
+            { name: 'Python', exp: '做过数据分析项目' },
+            { name: 'Vue.js', exp: '开发过校园小程序' },
+            { name: 'Rust', exp: '学习操作系统' }
+          ],
+      showAuthInfo: false,
+      showSkillModal: false,
+      skillForm: {
+        stack: '',
+        experience: ''
+      }
+    }
+  },
+  methods: {
+    onUploadAvatar() {
+      uni.showToast({
+        title: '上传头像功能待接入',
+        icon: 'none'
+      })
+    },
+    goProfile() {
+      uni.navigateTo({
+        url: '/pages/user/profile'
+      })
+    },
+    openAuthInfo() {
+      this.showAuthInfo = true
+    },
+    closeAuthInfo() {
+      this.showAuthInfo = false
+    },
+    openSkillModal() {
+      this.skillForm.stack = ''
+      this.skillForm.experience = ''
+      this.showSkillModal = true
+    },
+    closeSkillModal() {
+      this.showSkillModal = false
+    },
+    confirmAddSkill() {
+      const name = this.skillForm.stack?.trim()
+      const exp = this.skillForm.experience?.trim()
+      
+      if (!name) {
+        uni.showToast({ title: '请填写技术栈', icon: 'none' })
+        return
+      }
+    
+      // 推入对象：包含名字 + 经历
+      this.skills.push({
+        name: name,
+        exp: exp
+      })
+      
+      this.closeSkillModal()
+    },
+    goMyProjects(type) {
+      uni.navigateTo({
+        url: `/pages/user/my-projects?type=${type}`
+      })
+    },
+    goSettings() {
+  // 注释掉原来的跳转代码（不要删，等同学做好后取消注释即可）
+  uni.navigateTo({
+     url: '/pages/settings/settings'
+  });
+},
+    goFeedback() {
+      uni.navigateTo({
+        url: `/pages/user/feedback?userName=${encodeURIComponent(this.userInfo.name)}`
+      });
+    },
+	// 查看技能详情
+	  onViewSkill({ skill, index }) {
+	    uni.showModal({
+	      title: '技能详情',
+	      content: `技能：${skill.name}\n经历：${skill.exp || '暂无填写'}`,
+	      showCancel: false
+	    })
+	  },
+	
+	  // 删除技能
+	  onDeleteSkill(index) {
+	    uni.showModal({
+	      title: '确认删除',
+	      content: '确定要删除该技能吗？',
+	      success: (res) => {
+	        if (res.confirm) {
+	          this.skills.splice(index, 1)
+	        }
+	      }
+	    })
+	  }
+  }
+}
+</script>
+
+<style lang="scss">
+.user-page {
+  padding: 32rpx;
+  background-color: #f5f7fb;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: 32rpx;
+  color: #333;
+  margin-bottom: 24rpx;
+}
+
+.card {
+  background-color: #ffffff; /* 更亮的白色 */
+  border-radius: 24rpx;
+  padding: 24rpx 28rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06); /* 更柔和的阴影 */
+  margin-bottom: 24rpx;
+}
+
+.user-card {
+  display: flex;
+  align-items: center;
+}
+
+.user-card-left {
+  margin-right: 32rpx;
+}
+
+.avatar-circle {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  border: 4rpx solid #355ac9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-text {
+  font-size: 24rpx;
+  color: #355ac9;
+}
+
+.user-card-right {
+  flex: 1;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+}
+
+.user-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.edit-icon {
+  margin-left: 16rpx;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.user-subtitle {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #888;
+}
+
+.auth-badge {
+  margin-top: 16rpx;
+  align-self: flex-start;
+  padding: 0 24rpx;
+  height: 48rpx; /* 固定高度 */
+  border-radius: 24rpx; /* 高度的一半，保证圆角 */
+  background-color: #355ac9;
+  width: 180rpx;
+  text-align: center;
+  display: flex;
+  align-items: center;    /* 垂直居中 */
+  justify-content: center;/* 水平居中 */
+}
+
+.auth-badge-text {
+  font-size: 22rpx;
+  color: #fff;
+}
+
+.section-card {
+  padding-top: 20rpx;
+  padding-bottom: 20rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.section-icon {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  margin-right: 16rpx;
+}
+
+.section-icon-doc {
+  background-color: #355ac9;
+}
+
+.section-icon-tag {
+  background-color: #355ac9;
+}
+
+.section-title {
+  font-size: 28rpx;
+  color: #222;
+}
+
+.divider {
+  height: 2rpx;
+  background-color: #f0f0f5;
+  margin: 12rpx 0;
+}
+
+.section-list {
+  margin-top: 8rpx;
+}
+
+.list-item {
+  padding: 16rpx 4rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.list-item.disabled {
+  opacity: 0.6;
+}
+
+.item-left {
+  display: flex;
+  align-items: center;
+}
+
+.item-icon-circle {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  border: 2rpx solid #355ac9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+}
+
+.item-icon-lock {
+  border-color: #999;
+}
+
+.item-icon-gear {
+  background-color: #355ac9;
+}
+
+.item-icon-mail {
+  background-color: #355ac9;
+}
+
+.item-icon-text {
+  font-size: 22rpx;
+  color: #355ac9;
+}
+
+.item-text {
+  font-size: 26rpx;
+  color: #333;
+}
+
+.item-arrow {
+  font-size: 32rpx;
+  color: #c0c0c8;
+}
+
+.timeline-dot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  border: 4rpx solid #e0b14a;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 8rpx;
+}
+
+.skill-chip {
+  padding: 8rpx 20rpx;
+  border-radius: 32rpx;
+  margin-right: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.skill-text {
+  font-size: 22rpx;
+  color: #355ac9;
+}
+
+.skill-actions {
+  margin-top: 8rpx;
+  display: flex;
+}
+
+.add-btn {
+  margin-right: 16rpx;
+  padding: 8rpx 22rpx;
+  border-radius: 32rpx;
+  border: 2rpx dashed #355ac9;
+  display: flex;
+  align-items: center;
+}
+
+.add-btn-plus {
+  font-size: 26rpx;
+  color: #355ac9;
+  margin-right: 4rpx;
+}
+
+.add-btn-text {
+  font-size: 22rpx;
+  color: #355ac9;
+}
+
+.modal-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-container {
+  width: 80%;
+  background-color: #fff;
+  border-radius: 24rpx;
+  padding: 24rpx 24rpx 28rpx;
+  box-sizing: border-box;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.modal-title {
+  font-size: 28rpx;
+  color: #222;
+}
+
+.modal-close {
+  font-size: 28rpx;
+  color: #999;
+}
+
+.modal-body {
+  margin-top: 4rpx;
+}
+
+.modal-row {
+  display: flex;
+  margin-bottom: 12rpx;
+}
+
+.modal-label {
+  width: 160rpx;
+  font-size: 24rpx;
+  color: #666;
+}
+
+.modal-value {
+  flex: 1;
+  font-size: 24rpx;
+  color: #333;
+}
+
+.form-item {
+  margin-top: 16rpx;
+}
+
+.form-label {
+  font-size: 24rpx;
+  color: #555;
+}
+
+.form-input {
+  margin-top: 8rpx;
+  padding: 16rpx 20rpx;
+  border-radius: 16rpx;
+  border: 2rpx solid #e0e0ea;
+  font-size: 24rpx;
+}
+
+.form-textarea {
+  margin-top: 8rpx;
+  padding: 16rpx 20rpx;
+  border-radius: 16rpx;
+  border: 2rpx solid #e0e0ea;
+  font-size: 24rpx;
+  min-height: 160rpx;
+}
+
+.modal-footer {
+  margin-top: 24rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn {
+  width: 200rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  font-size: 26rpx;
+  border-radius: 16rpx;
+}
+
+.btn-cancel {
+  margin-right: 24rpx;
+  background-color: #f3f3f7;
+  color: #333;
+}
+
+.btn-primary {
+  background-color: #355ac9;
+  color: #fff;
+}
+</style>
+

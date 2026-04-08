@@ -1,0 +1,19 @@
+{
+     
+    "dependencies": {
+     
+         
+    "moment": "^2.29.4",
+     
+         
+    "uview-plus": "^3.7.13"
+     
+    },
+     
+    "devDependencies": {
+     
+         
+    "sass": "^1.97.3"
+     
+    }
+}
