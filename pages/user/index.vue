@@ -138,6 +138,7 @@
 <script>
 import UserInfo from '../../components/user/UserInfo.vue'
 import SkillTags from '../../components/user/SkillTags.vue'
+import api from '@/common/api/index.js'
 
 export default {
   components: {
@@ -168,6 +169,21 @@ export default {
         experience: ''
       }
     }
+  },
+  async onShow() {
+    const token = uni.getStorageSync('access-token')
+    if (!token) return
+    try {
+      const res = await api.getUserProfile()
+      if (res?.data) {
+        uni.setStorageSync('userInfo', res.data)
+        this.userInfo = {
+          name: res.data.nickname || res.data.username || '未命名用户',
+          grade: res.data.grade || '',
+          college: res.data.major || ''
+        }
+      }
+    } catch (e) {}
   },
   methods: {
     onUploadAvatar() {

@@ -52,6 +52,7 @@
 <script setup>
 import { ref, reactive, onMounted,nextTick  } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
+import env from '@/common/config/env.js'
 //import { useStorage } from '@/uni_modules/uni-storage'; // 兼容Vue3的storage调用
 
 // Vue3 响应式数据（替代data）
@@ -71,6 +72,13 @@ const scrollTop = ref(0);
 const loading = ref(false);
 const pageNum = ref(1);
 const pageSize = ref(20);
+
+const getAuthHeader = () => {
+  const token = uni.getStorageSync('access-token') || ''
+  const header = { 'Content-Type': 'application/json' }
+  if (token) header.Authorization = `Bearer ${token}`
+  return header
+}
 
 // 页面加载时获取参数
 onLoad((options) => {
@@ -103,14 +111,10 @@ const getHistoryMessages = async () => {
   loading.value = true;
   
   try {
-    // 替换为真实接口地址
     const res = await request({
-      url: `http://127.0.0.1:4523/m1/7867336-7617022-default/chat/messages`,
+      url: `${env.baseUrl}/chat/messages`,
       method: 'GET',
-      header: {
-        token: uni.getStorageSync('token') || '',
-        'Content-Type': 'application/json'
-      },
+      header: getAuthHeader(),
       data: {
         sessionId: sessionId.value,
         pageNum: pageNum.value,
@@ -126,6 +130,8 @@ const getHistoryMessages = async () => {
       if (pageNum.value === 2) {
         scrollToBottom();
       }
+    } else {
+      uni.showToast({ title: res.data?.message || '加载消息失败', icon: 'none' });
     }
   } catch (err) {
     uni.showToast({ title: '加载消息失败', icon: 'none' });
@@ -149,14 +155,10 @@ const sendMessage = async () => {
   }
 
   try {
-    // 调用真实发送消息接口
     const res = await request({
-      url: 'http://127.0.0.1:4523/m1/7867336-7617022-default/chat/message',
+      url: `${env.baseUrl}/chat/message`,
       method: 'POST',
-      header: {
-        token: uni.getStorageSync('token') || '',
-        'Content-Type': 'application/json'
-      },
+      header: getAuthHeader(),
       data: {
         sessionId: sessionId.value,
         content: content,
@@ -175,19 +177,11 @@ const sendMessage = async () => {
       scrollToBottom(); // 滚到底部
       uni.showToast({ title: '发送成功', icon: 'none' });
     } else {
-      uni.showToast({ title: res.data?.msg || '发送失败', icon: 'none' });
+      uni.showToast({ title: res.data?.message || '发送失败', icon: 'none' });
     }
   } catch (err) {
-    // 接口失败时本地模拟发送（避免阻塞开发）
-    messageList.value.push({
-      senderId: userId.value,
-      content: content,
-      createTime: new Date().toLocaleTimeString()
-    });
-    inputContent.value = '';
-    scrollToBottom();
-    uni.showToast({ title: '接口暂未就绪，已本地模拟发送', icon: 'none' });
     console.error('发送消息失败:', err);
+    uni.showToast({ title: '发送失败', icon: 'none' });
   }
 };
 

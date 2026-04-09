@@ -13,6 +13,18 @@
 	  },
   "pages": [
 	  {
+	        "path": "pages/login/login",
+	        "style": {
+	          "navigationBarTitleText": "登录"
+	        }
+	  },
+	  {
+	        "path": "pages/login/register",
+	        "style": {
+	          "navigationBarTitleText": "注册"
+	        }
+	  },
+	  {
 	        "path": "pages/square/index",
 	        "style": {
 	          "navigationBarTitleText": "项目广场"

@@ -38,7 +38,8 @@ const dev = {
 };
 
 const local = {
-  baseUrl: "http://127.0.0.1:4523/m1/7867336-7617022-default",
+  // 真实后端地址
+  baseUrl: "http://8.159.150.156:8080",
   useMock: useMock
 };
 

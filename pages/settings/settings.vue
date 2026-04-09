@@ -94,7 +94,7 @@ export default {
         cancelText: '取消',
         success: (res) => {
           if (res.confirm) {
-            uni.removeStorageSync('token');
+            uni.removeStorageSync('access-token');
             uni.removeStorageSync('userInfo');
             uni.showToast({ title: '已退出登录', icon: 'success', duration: 1500 });
             setTimeout(() => {

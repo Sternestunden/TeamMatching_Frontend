@@ -33,7 +33,9 @@ export default (vm) => {
 			//config.header['access-token'] = vm.$store.state.token
 			const token = uni.getStorageSync("access-token")
 			if (token) {
+				// 兼容旧写法 + 文档标准 Bearer Token
 				config.header['access-token'] = token
+				config.header['Authorization'] = `Bearer ${token}`
 			}
 		}
 		return config
@@ -63,11 +65,11 @@ export default (vm) => {
 				uni.$u.toast(data.message || '请求失败')
 			}
 			if(401 == data.code) {
-				uni.removeStorageSync("Access-Token")
+				uni.removeStorageSync("access-token")
 				uni.removeStorageSync("userInfo")
 				setTimeout(()=>{
 					uni.navigateTo({
-						url: '/pages/login/index'
+						url: '/pages/login/login'
 					});
 				},1000)
 			}

@@ -140,6 +140,7 @@ export default {
       searchKeyword: "",
       showFilter: false,
       projectList: [],
+      currentPage: 1,
       
       // 🔥 筛选相关数据
       activeFilterTab: "grade", // 当前激活的筛选标签
@@ -226,7 +227,22 @@ export default {
   },
 
   onLoad() {
+    uni.$off('project:created')
+    uni.$on('project:created', () => {
+      this.currentPage = 1
+      this.fetchProjects()
+    })
     this.fetchProjects();
+  },
+
+  onShow() {
+    // 从其他页面返回时刷新，确保能看到最新发布的项目
+    this.currentPage = 1
+    this.fetchProjects()
+  },
+
+  onUnload() {
+    uni.$off('project:created')
   },
 
   methods: {
@@ -264,9 +280,20 @@ export default {
       }
     },
 
-    changeSort(t) { this.currentSort = t; },
-    changeCategory(t) { this.currentCategory = t; },
-    handleSearch() {},
+    changeSort(t) {
+      this.currentSort = t;
+      this.currentPage = 1;
+      this.fetchProjects();
+    },
+    changeCategory(t) {
+      this.currentCategory = t;
+      this.currentPage = 1;
+      this.fetchProjects();
+    },
+    handleSearch() {
+      this.currentPage = 1;
+      this.fetchProjects();
+    },
 
     goProjectDetail(project) {
       if (this.isNavigating) return; 
