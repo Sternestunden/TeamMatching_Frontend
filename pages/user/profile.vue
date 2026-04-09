@@ -3,7 +3,13 @@
       <view class="card profile-card">
         <view class="profile-avatar" @tap="onUploadAvatar">
           <view class="avatar-circle">
-            <text class="avatar-text">上传头像</text>
+            <image
+              v-if="avatarUrl"
+              class="avatar-img"
+              :src="avatarUrl"
+              mode="aspectFill"
+            />
+            <text v-else class="avatar-text">上传头像</text>
           </view>
         </view>
         <view class="form-item">
@@ -64,6 +70,7 @@
     data() {
       return {
         loading: false,
+        avatarUrl: '',
         genderOptions: [
           { label: '未知', value: 0 },
           { label: '男', value: 1 },
@@ -101,9 +108,50 @@
         this.form.birthday = e.detail.value
       },
       onUploadAvatar() {
-        uni.showToast({
-          title: '上传头像功能待接入',
-          icon: 'none'
+        const token = uni.getStorageSync('access-token')
+        if (!token) {
+          uni.showToast({ title: '请先登录', icon: 'none' })
+          setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 300)
+          return
+        }
+
+        uni.chooseImage({
+          count: 1,
+          sizeType: ['compressed'],
+          sourceType: ['album', 'camera'],
+          success: async (chooseRes) => {
+            const filePath = chooseRes?.tempFilePaths?.[0]
+            if (!filePath) return
+            this.loading = true
+            try {
+              const uploadRes = await api.uploadFile({ filePath, targetType: 7, isTemp: false })
+              const file = uploadRes?.data
+              if (!file?.fileId) {
+                uni.showToast({ title: '上传失败', icon: 'none' })
+                return
+              }
+
+              this.form.avatarFileId = file.fileId
+              this.avatarUrl = file.fileUrl || this.avatarUrl
+
+              // 上传完立即保存头像ID（避免用户忘记点保存）
+              await api.updateUserProfile({ avatarFileId: file.fileId })
+              try {
+                const res = await api.getUserProfile()
+                if (res?.data) uni.setStorageSync('userInfo', res.data)
+              } catch (e) {}
+
+              uni.showToast({ title: '头像已更新', icon: 'success' })
+            } catch (e) {
+              console.error('上传头像失败：', e)
+              uni.showToast({ title: e?.data?.message || e?.message || '上传失败', icon: 'none' })
+            } finally {
+              this.loading = false
+            }
+          },
+          fail: () => {
+            // 用户取消不提示
+          }
         })
       },
       async loadProfile() {
@@ -122,6 +170,7 @@
           this.form.personalIntro = u.personalIntro || ''
           this.form.awardExperience = u.awardExperience || ''
           this.form.avatarFileId = u.avatarFile?.fileId ?? null
+          this.avatarUrl = u.avatarFile?.fileUrl || ''
         } catch (e) {
           console.error('加载个人资料失败：', e)
           uni.showToast({ title: e?.data?.message || e?.message || '加载失败', icon: 'none' })
@@ -205,11 +254,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
   }
   
   .avatar-text {
     font-size: 24rpx;
     color: #355ac9;
+  }
+
+  .avatar-img {
+    width: 100%;
+    height: 100%;
   }
   
   .form-item {

@@ -3,7 +3,13 @@
     <view class="card">
       <view class="header">
         <view class="avatar">
-          <text class="avatar-text">头像</text>
+          <image
+            v-if="avatarUrl"
+            class="avatar-img"
+            :src="avatarUrl"
+            mode="aspectFill"
+          />
+          <text v-else class="avatar-text">头像</text>
         </view>
         <view class="header-main">
           <text class="nickname">{{ profile.nickname || profile.username || '未命名用户' }}</text>
@@ -47,7 +53,8 @@ export default {
   data() {
     return {
       loading: false,
-      profile: {}
+      profile: {},
+      avatarUrl: ''
     }
   },
   computed: {
@@ -77,6 +84,7 @@ export default {
       try {
         const res = await api.getUserProfile()
         this.profile = res?.data || {}
+        this.avatarUrl = this.profile?.avatarFile?.fileUrl || ''
       } catch (e) {
         console.error('获取个人资料失败：', e)
         uni.showToast({ title: e?.data?.message || e?.message || '获取失败', icon: 'none' })
@@ -117,10 +125,15 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 .avatar-text {
   font-size: 22rpx;
   color: #355ac9;
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
 }
 .header-main {
   flex: 1;

@@ -166,16 +166,64 @@ export default {
         this.userInfo = {
           name: res.data.nickname || res.data.username || '未命名用户',
           grade: res.data.grade || '',
-          college: res.data.major || ''
+          college: res.data.major || '',
+          avatarUrl: res.data.avatarFile?.fileUrl || ''
         }
       }
     } catch (e) {}
   },
   methods: {
     onUploadAvatar() {
-      uni.showToast({
-        title: '上传头像功能待接入',
-        icon: 'none'
+      const token = uni.getStorageSync('access-token')
+      if (!token) {
+        uni.showToast({ title: '请先登录', icon: 'none' })
+        setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 300)
+        return
+      }
+
+      uni.chooseImage({
+        count: 1,
+        sizeType: ['compressed'],
+        sourceType: ['album', 'camera'],
+        success: async (chooseRes) => {
+          const filePath = chooseRes?.tempFilePaths?.[0]
+          if (!filePath) return
+          try {
+            uni.showLoading({ title: '上传中' })
+            const uploadRes = await api.uploadFile({ filePath, targetType: 7, isTemp: false })
+            const file = uploadRes?.data
+            if (!file?.fileId) {
+              uni.showToast({ title: '上传失败', icon: 'none' })
+              return
+            }
+            await api.updateUserProfile({ avatarFileId: file.fileId })
+
+            // 刷新用户信息与头像显示
+            const res = await api.getUserProfile()
+            if (res?.data) {
+              uni.setStorageSync('userInfo', res.data)
+              this.userInfo = {
+                ...this.userInfo,
+                name: res.data.nickname || res.data.username || this.userInfo.name,
+                grade: res.data.grade || this.userInfo.grade,
+                college: res.data.major || this.userInfo.college,
+                avatarUrl: res.data.avatarFile?.fileUrl || file.fileUrl || this.userInfo.avatarUrl
+              }
+            } else {
+              this.userInfo = { ...this.userInfo, avatarUrl: file.fileUrl || this.userInfo.avatarUrl }
+            }
+
+            uni.showToast({ title: '头像已更新', icon: 'success' })
+          } catch (e) {
+            console.error('上传头像失败：', e)
+            uni.showToast({ title: e?.data?.message || e?.message || '上传失败', icon: 'none' })
+          } finally {
+            uni.hideLoading()
+          }
+        },
+        fail: () => {
+          // 用户取消不提示
+        }
       })
     },
     goProfile() {
