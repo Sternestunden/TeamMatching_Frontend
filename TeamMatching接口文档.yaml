@@ -1,0 +1,6309 @@
+openapi: 3.0.1
+info:
+  title: 默认模块
+  description: >
+    基于 AI 的校园组队匹配平台基础接口规范。
+
+    包含账户认证、项目招募、人才广场、消息中心、团队管理、公共社区及后台管理功能。
+
+
+    **附录：WebSocket 消息协议**
+
+    * 连接地址: `wss://api.team-matching.com/ws?token=<jwt_token>`
+
+    * 由于 OpenAPI 3.0 规范主要针对 HTTP RESTful 接口，WebSocket 的定义已在说明中备注，请在客户端单独建立 WS
+    连接。
+  version: 1.0.0
+tags:
+  - name: 1. 基础账户与风控体系
+  - name: 2. 项目广场
+  - name: 3. 人才广场
+  - name: 4. 消息中心
+  - name: 5. 我的团队
+  - name: 6. 公共社区
+  - name: 7. 管理员后台
+  - name: 8. 通用接口
+  - name: 基础账户
+  - name: 项目广场
+  - name: 人才广场
+  - name: 消息中心
+  - name: 我的团队
+  - name: 公共社区
+  - name: 通用接口
+  - name: 管理员后台
+paths:
+  /auth/register:
+    post:
+      summary: 邮箱/手机号注册
+      deprecated: false
+      description: 对应功能 F-01，支持手机号或邮箱注册
+      operationId: register
+      tags:
+        - 1. 基础账户与风控体系
+        - 基础账户
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account
+                - password
+                - verifyCode
+              properties:
+                account:
+                  type: string
+                  description: 邮箱或手机号
+                  example: student@example.com
+                password:
+                  type: string
+                  description: 密码(6-20位)
+                  format: password
+                  example: password123
+                nickname:
+                  type: string
+                  description: 用户昵称
+                  example: 张三
+                verifyCode:
+                  type: string
+                  description: 6位验证码
+                  example: '123456'
+        required: true
+      responses:
+        '200':
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          userId:
+                            type: integer
+                            example: 10001
+                          token:
+                            type: string
+                            example: eyJhbGciOiJIUzI1NiIs...
+                          expiresIn:
+                            type: integer
+                            example: 7200
+                          authStatus:
+                            type: integer
+                            description: 认证状态：0-待审核 1-已通过 2-未认证(新注册用户)
+                            enum:
+                              - 0
+                              - 1
+                              - 2
+                            example: 2
+          headers: {}
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+          headers: {}
+        '500':
+          description: 服务器内部错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+          headers: {}
+      security: []
+  /auth/verify:
+    post:
+      summary: 提交身份认证
+      deprecated: false
+      description: 对应功能 F-03，提交校园身份认证信息（包含证明材料）
+      operationId: submitAuth
+      tags:
+        - 1. 基础账户与风控体系
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - studentId
+                - realName
+                - major
+                - grade
+                - email
+                - materialFileIds
+              properties:
+                studentId:
+                  type: string
+                  description: 学号
+                  example: '20210001'
+                realName:
+                  type: string
+                  description: 真实姓名
+                  example: 张三
+                major:
+                  type: string
+                  description: 专业
+                  example: 计算机科学与技术
+                grade:
+                  type: string
+                  description: 年级（如：2021级）
+                  example: 2021级
+                email:
+                  type: string
+                  description: 校园邮箱
+                  example: zhangsan@stu.edu.cn
+                materialFileIds:
+                  type: array
+                  description: 认证材料文件ID列表（通过上传接口获取，targetType=8）
+                  items:
+                    type: integer
+                  example:
+                    - 10009
+                    - 10010
+                materialTypes:
+                  type: array
+                  description: 材料类型列表（与fileIds一一对应）：1-学生证 2-身份证 3-校园卡 4-学信网证明
+                  items:
+                    type: integer
+                    enum:
+                      - 1
+                      - 2
+                      - 3
+                      - 4
+                  example:
+                    - 1
+                    - 2
+        required: true
+      responses:
+        '200':
+          description: 提交成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      authId:
+                        type: integer
+                        example: 10001
+                      message:
+                        type: string
+                        example: 认证申请提交成功，等待审核
+                      authStatus:
+                        type: integer
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        example: 0
+          headers: {}
+      security:
+        - token: []
+  /auth/wx-login:
+    post:
+      summary: 微信一键登录
+      deprecated: false
+      description: 对应功能 F-01，微信OAuth 2.0一键登录
+      operationId: wxLogin
+      tags:
+        - 1. 基础账户与风控体系
+        - 基础账户
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+                  description: 微信临时登录凭证
+                  example: 071JtF0w3SxDek2CO04w3jJCw03JtF0g
+                encryptedData:
+                  type: string
+                  description: 加密数据(前端加密)
+                  example: encryptedDataString
+                iv:
+                  type: string
+                  description: 加密算法的初始向量
+                  example: ivString
+        required: true
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          userId:
+                            type: integer
+                            example: 10001
+                          token:
+                            type: string
+                            example: eyJhbGciOiJIUzI1NiIs...
+                          expiresIn:
+                            type: integer
+                            example: 7200
+                          isNewUser:
+                            type: boolean
+                            description: 是否是新用户（true表示需引导绑定手机号/邮箱）
+                            example: false
+                          authStatus:
+                            type: integer
+                            description: 认证状态：0-待审核 1-已通过 2-未认证
+                            enum:
+                              - 0
+                              - 1
+                              - 2
+                            example: 2
+          headers: {}
+      security: []
+  /auth/status:
+    get:
+      summary: 查询认证状态
+      deprecated: false
+      description: 查询当前用户的身份认证状态及材料信息
+      operationId: getAuthStatus
+      tags:
+        - 1. 基础账户与风控体系
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      authStatus:
+                        type: integer
+                        description: 0-待审核 1-已通过 2-已驳回
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        example: 0
+                      auditTime:
+                        type: string
+                        format: date-time
+                        description: 审核时间
+                        example: '2024-01-15T10:30:00Z'
+                      remark:
+                        type: string
+                        description: 审核备注/驳回原因
+                        example: 学号信息不匹配
+                      materials:
+                        type: array
+                        description: 已上传的认证材料
+                        items:
+                          type: object
+                          properties:
+                            materialId:
+                              type: integer
+                              example: 1
+                            materialType:
+                              type: integer
+                              description: 1-学生证 2-身份证 3-校园卡 4-学信网证明
+                              enum:
+                                - 1
+                                - 2
+                                - 3
+                                - 4
+                              example: 1
+                            fileInfo:
+                              type: object
+                              properties:
+                                fileId:
+                                  type: integer
+                                  example: 10009
+                                fileName:
+                                  type: string
+                                  example: 学生证_张三.jpg
+                                fileUrl:
+                                  type: string
+                                  example: https://example.com/files/2024/01/abc123.jpg
+                                fileSize:
+                                  type: integer
+                                  example: 2048576
+                            auditStatus:
+                              type: integer
+                              description: 材料审核状态：0-待审核 1-已通过 2-已驳回
+                              enum:
+                                - 0
+                                - 1
+                                - 2
+                              example: 0
+                            remark:
+                              type: string
+                              example: ''
+                            createdTime:
+                              type: string
+                              format: date-time
+                              example: '2024-01-01T10:00:00Z'
+                      applyTime:
+                        type: string
+                        format: date-time
+                        example: '2024-01-01T10:00:00Z'
+          headers: {}
+      security:
+        - token: []
+  /auth/login:
+    post:
+      summary: 密码登录
+      deprecated: false
+      description: 对应功能 F-01，使用账号密码登录
+      operationId: login
+      tags:
+        - 1. 基础账户与风控体系
+        - 基础账户
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account
+                - password
+              properties:
+                account:
+                  type: string
+                  description: 邮箱/手机号/学号
+                  example: student@example.com
+                password:
+                  type: string
+                  description: 密码
+                  format: password
+                  example: password123
+        required: true
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          userId:
+                            type: integer
+                            example: 10001
+                          token:
+                            type: string
+                            example: eyJhbGciOiJIUzI1NiIs...
+                          expiresIn:
+                            type: integer
+                            example: 7200
+                          authStatus:
+                            type: integer
+                            description: 认证状态：0-待审核 1-已通过 2-未认证
+                            enum:
+                              - 0
+                              - 1
+                              - 2
+                            example: 1
+          headers: {}
+      security: []
+  /user/profile:
+    get:
+      summary: 获取个人资料
+      deprecated: false
+      description: 对应功能 F-04，获取当前用户的详细资料
+      operationId: getUserProfile
+      tags:
+        - 1. 基础账户与风控体系
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      userId:
+                        type: integer
+                        example: 10001
+                      studentId:
+                        type: string
+                        example: '20210001'
+                      username:
+                        type: string
+                        example: 张三
+                      nickname:
+                        type: string
+                        example: 张三
+                      avatarFile:
+                        type: object
+                        properties:
+                          fileId:
+                            type: integer
+                            example: 10001
+                          fileName:
+                            type: string
+                            example: avatar_张三.jpg
+                          fileUrl:
+                            type: string
+                            example: https://example.com/avatar/10001.jpg
+                          fileSize:
+                            type: integer
+                            example: 102400
+                      gender:
+                        type: integer
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        example: 1
+                      birthday:
+                        type: string
+                        format: date
+                        example: '2000-01-01'
+                      major:
+                        type: string
+                        example: 计算机科学与技术
+                      grade:
+                        type: string
+                        example: 2021级
+                      email:
+                        type: string
+                        example: zhangsan@stu.edu.cn
+                      phone:
+                        type: string
+                        example: 138****1234
+                      techStack:
+                        type: string
+                        example: Python,Java,机器学习
+                      personalIntro:
+                        type: string
+                        example: 热爱编程，有多个项目经验
+                      awardExperience:
+                        type: string
+                        example: 2023年挑战杯省赛一等奖
+                      authStatus:
+                        type: integer
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        example: 1
+                      isTalentVisible:
+                        type: boolean
+                        example: true
+                      createdTime:
+                        type: string
+                        format: date-time
+                        example: '2023-09-01T10:00:00Z'
+          headers: {}
+      security:
+        - token: []
+    put:
+      summary: 更新个人资料
+      deprecated: false
+      description: 对应功能 F-04，更新当前用户的个人资料
+      operationId: updateUserProfile
+      tags:
+        - 1. 基础账户与风控体系
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nickname:
+                  type: string
+                  description: 用户昵称
+                  example: 张三
+                avatarFileId:
+                  type: integer
+                  description: 头像文件ID（通过上传接口获取，targetType=7）
+                  example: 10001
+                gender:
+                  type: integer
+                  description: 性别：0-未知 1-男 2-女
+                  enum:
+                    - 0
+                    - 1
+                    - 2
+                  example: 1
+                birthday:
+                  type: string
+                  format: date
+                  description: 出生日期
+                  example: '2000-01-01'
+                major:
+                  type: string
+                  description: 专业
+                  example: 软件工程
+                grade:
+                  type: string
+                  description: 年级
+                  example: 2022级
+                techStack:
+                  type: string
+                  description: 技术栈（逗号分隔）
+                  example: Python,Java,机器学习
+                personalIntro:
+                  type: string
+                  description: 个人简介
+                  example: 热爱编程，有多个项目经验
+                awardExperience:
+                  type: string
+                  description: 获奖经历
+                  example: 2023年挑战杯省赛一等奖
+        required: true
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 更新成功
+          headers: {}
+      security:
+        - token: []
+  /auth/send-code:
+    post:
+      summary: 发送验证码
+      deprecated: false
+      description: 发送邮箱或手机验证码。对于后缀为 `.edu.cn` 的学校邮箱，可配合学生邮箱认证接口完成学生身份认证。
+      operationId: sendCode
+      tags:
+        - 1. 基础账户与风控体系
+        - 基础账户
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - target
+                - type
+              properties:
+                target:
+                  type: string
+                  description: 邮箱或手机号
+                  example: student@example.com
+                type:
+                  type: string
+                  description: 类型：register/login/reset/auth（auth 表示学生邮箱认证）
+                  enum:
+                    - register
+                    - login
+                    - reset
+                    - auth
+                  example: register
+        required: true
+      responses:
+        '200':
+          description: 成功发送
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 验证码发送成功
+                          expireIn:
+                            type: integer
+                            description: 验证码有效期（秒）
+                            example: 300
+          headers: {}
+      security: []
+  /auth/forgot-password:
+    post:
+      summary: 找回密码
+      deprecated: false
+      description: 对应功能 F-02，通过验证码重置密码
+      operationId: forgotPassword
+      tags:
+        - 1. 基础账户与风控体系
+        - 基础账户
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account
+                - verifyCode
+                - newPassword
+              properties:
+                account:
+                  type: string
+                  description: 邮箱或手机号
+                  example: student@example.com
+                verifyCode:
+                  type: string
+                  description: 6位验证码
+                  example: '123456'
+                newPassword:
+                  type: string
+                  description: 新密码(6-20位)
+                  format: password
+                  example: newPassword123
+        required: true
+      responses:
+        '200':
+          description: 密码重置成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 密码重置成功
+          headers: {}
+      security: []
+  /user/skill-cert:
+    post:
+      summary: 添加技能认证
+      deprecated: false
+      description: 对应功能 F-05，添加技能认证证书
+      operationId: addSkillCert
+      tags:
+        - 1. 基础账户与风控体系
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - skillName
+                - certName
+                - certFileId
+                - issueDate
+              properties:
+                skillName:
+                  type: string
+                  description: 技能名称
+                  example: Python
+                certName:
+                  type: string
+                  description: 证书名称
+                  example: Python 二级证书
+                certFileId:
+                  type: integer
+                  description: 证书文件ID（通过上传接口获取，targetType=2）
+                  example: 10002
+                issueDate:
+                  type: string
+                  format: date
+                  description: 发证日期
+                  example: '2023-06-01'
+                issuer:
+                  type: string
+                  description: 发证机构
+                  example: 教育部考试中心
+                certNumber:
+                  type: string
+                  description: 证书编号
+                  example: '20230601123456'
+                description:
+                  type: string
+                  description: 证书描述
+                  example: 全国计算机等级考试二级Python
+        required: true
+      responses:
+        '200':
+          description: 添加成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      certId:
+                        type: integer
+                        example: 101
+                      message:
+                        type: string
+                        example: 添加成功，等待审核
+                      auditStatus:
+                        type: integer
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        example: 0
+          headers: {}
+      security:
+        - token: []
+    get:
+      summary: 获取技能认证列表
+      deprecated: false
+      description: 对应功能 F-05，获取当前用户的技能认证列表
+      operationId: getSkillCertList
+      tags:
+        - 1. 基础账户与风控体系
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        certId:
+                          type: integer
+                          example: 101
+                        skillName:
+                          type: string
+                          example: Python
+                        certName:
+                          type: string
+                          example: Python 二级证书
+                        certFile:
+                          type: object
+                          properties:
+                            fileId:
+                              type: integer
+                              example: 10002
+                            fileName:
+                              type: string
+                              example: 二级证书_张三.pdf
+                            fileUrl:
+                              type: string
+                              example: https://example.com/certs/10002.pdf
+                            fileSize:
+                              type: integer
+                              example: 512000
+                        issueDate:
+                          type: string
+                          format: date
+                          example: '2023-06-01'
+                        issuer:
+                          type: string
+                          example: 教育部考试中心
+                        certNumber:
+                          type: string
+                          example: '20230601123456'
+                        description:
+                          type: string
+                          example: 全国计算机等级考试二级Python
+                        auditStatus:
+                          type: integer
+                          enum:
+                            - 0
+                            - 1
+                            - 2
+                          example: 1
+                        auditTime:
+                          type: string
+                          format: date-time
+                          example: '2023-06-15T10:00:00Z'
+                        createdTime:
+                          type: string
+                          format: date-time
+                          example: '2023-06-01T10:00:00Z'
+          headers: {}
+      security:
+        - token: []
+  /auth/password:
+    put:
+      summary: 修改密码
+      deprecated: false
+      description: 修改当前登录用户的密码
+      operationId: changePassword
+      tags:
+        - 1. 基础账户与风控体系
+        - 基础账户
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oldPassword
+                - newPassword
+              properties:
+                oldPassword:
+                  type: string
+                  description: 旧密码
+                  format: password
+                  example: oldPassword123
+                newPassword:
+                  type: string
+                  description: 新密码(6-20位)
+                  format: password
+                  example: newPassword123
+        required: true
+      responses:
+        '200':
+          description: 密码修改成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 密码修改成功
+          headers: {}
+        '401':
+          description: 未认证或令牌无效
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: 未授权，请先登录
+                  data:
+                    type: object
+                    properties: {}
+                    nullable: true
+          headers: {}
+      security:
+        - token: []
+  /auth/verify-email:
+    post:
+      summary: 学生邮箱认证
+      deprecated: false
+      description: |
+        通过学生邮箱验证码完成校园身份认证，仅支持学校邮箱（后缀为 `.edu.cn`）。
+        该接口作为 /auth/verify 的补充方式，认证通过后 authStatus 将直接变为 1（已通过），无需上传证明材料。
+      operationId: verifyByStudentEmail
+      tags:
+        - 1. 基础账户与风控体系
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - verifyCode
+                - school
+              properties:
+                email:
+                  type: string
+                  description: 学生邮箱（仅支持以 .edu.cn 结尾）
+                  example: zhangsan@stu.edu.cn
+                verifyCode:
+                  type: string
+                  description: 6 位验证码（通过 /auth/send-code 接口 type=auth 发送）
+                  example: '123456'
+                school:
+                  type: string
+                  description: 学校名称
+                  example: 华东师范大学
+      responses:
+        '200':
+          description: 认证成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      authId:
+                        type: integer
+                        example: 10001
+                      message:
+                        type: string
+                        example: 学生邮箱认证成功
+                      authStatus:
+                        type: integer
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        example: 1
+          headers: {}
+      security:
+        - token: []
+  /project:
+    post:
+      summary: 创建项目
+      deprecated: false
+      description: 对应功能 F-06，创建新项目招募
+      operationId: createProject
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - belongTrack
+                - projectIntro
+                - deadlineRecruit
+              properties:
+                name:
+                  type: string
+                  description: 项目名称
+                  example: 基于AI的校园组队平台
+                belongTrack:
+                  type: string
+                  description: 所属赛道（大创、挑战杯等）
+                  example: 大创
+                level:
+                  type: integer
+                  description: 级别：1-校级 2-省级 3-国家级
+                  enum:
+                    - 1
+                    - 2
+                    - 3
+                  example: 2
+                projectType:
+                  type: string
+                  description: 类型：创新训练/创业实践
+                  example: 创新训练
+                projectIntro:
+                  type: string
+                  description: 项目详细介绍
+                  example: 本项目旨在利用人工智能技术，为大学生提供一个高效、精准的比赛组队平台
+                projectFeatures:
+                  type: string
+                  description: 项目特点/亮点
+                  example: 智能匹配、实时沟通、团队协作
+                tags:
+                  type: string
+                  description: 项目标签（逗号分隔）
+                  example: AI,组队,校园
+                allowCrossMajor:
+                  type: boolean
+                  description: 是否允许跨专业申请
+                  default: true
+                  example: true
+                isAnonymous:
+                  type: boolean
+                  description: 是否匿名发布
+                  default: false
+                  example: false
+                contactInfo:
+                  type: string
+                  description: 匿名时显示的临时联系方式
+                  example: 队长微信：captain123
+                deadlineRecruit:
+                  type: string
+                  format: date-time
+                  description: 招募截止时间
+                  example: '2024-12-31T23:59:59Z'
+                status:
+                  type: integer
+                  description: 项目状态：0-草拟 1-实施 2-招募中 3-完成 4-终止（默认为0-草拟）
+                  enum:
+                    - 0
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                  default: 0
+                  example: 0
+                roleRequirements:
+                  type: array
+                  description: 角色要求列表
+                  items:
+                    type: object
+                    required:
+                      - role
+                      - memberQuota
+                    properties:
+                      role:
+                        type: string
+                        description: 所需角色名
+                        example: 前端开发
+                      memberQuota:
+                        type: integer
+                        description: 招募人数
+                        example: 2
+                      recruitRequirements:
+                        type: string
+                        description: 具体招募要求
+                        example: 熟悉Vue.js，有小程序开发经验
+        required: true
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          projectId:
+                            type: integer
+                            description: 项目ID
+                            example: 201
+                          message:
+                            type: string
+                            example: 创建成功，待审核
+          headers: {}
+      security:
+        - token: []
+  /project/{projectId}/apply:
+    post:
+      summary: 立即沟通（投递）
+      deprecated: false
+      description: 对应功能 F-12，学生向项目投递申请
+      operationId: applyProject
+      tags:
+        - 2. 项目广场
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 201
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - requirementId
+                - applyReason
+              properties:
+                requirementId:
+                  type: integer
+                  description: 申请的角色要求ID
+                  example: 301
+                applyReason:
+                  type: string
+                  description: 申请原因/自我介绍
+                  example: 我有2年前端开发经验，参与过类似项目
+                customResumeFileId:
+                  type: integer
+                  description: 投递专用简历文件ID（通过上传接口获取，targetType=1）
+                  example: 10005
+                applicationAttachmentFileId:
+                  type: integer
+                  description: 其他附件文件ID（通过上传接口获取，targetType=5）
+                  example: 10006
+        required: true
+      responses:
+        '200':
+          description: 投递成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      applicationId:
+                        type: integer
+                        example: 401
+                      message:
+                        type: string
+                        example: 投递成功，等待队长回复
+                      sessionId:
+                        type: integer
+                        description: 创建的会话ID
+                        example: 501
+          headers: {}
+      security:
+        - token: []
+  /project/{projectId}:
+    put:
+      summary: 更新项目
+      deprecated: false
+      description: 更新项目信息
+      operationId: updateProject
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 项目名称
+                belongTrack:
+                  type: string
+                  description: 所属赛道
+                level:
+                  type: integer
+                  description: 级别
+                projectType:
+                  type: string
+                  description: 类型
+                projectIntro:
+                  type: string
+                  description: 项目介绍
+                projectFeatures:
+                  type: string
+                  description: 项目特点
+                tags:
+                  type: string
+                  description: 项目标签
+                allowCrossMajor:
+                  type: boolean
+                  description: 是否允许跨专业
+                isAnonymous:
+                  type: boolean
+                  description: 是否匿名发布
+                contactInfo:
+                  type: string
+                  description: 匿名联系方式
+                deadlineRecruit:
+                  type: string
+                  format: date-time
+                  description: 招募截止时间
+                status:
+                  type: integer
+                  description: 项目状态
+                roleRequirements:
+                  type: array
+                  description: 角色要求列表
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                      memberQuota:
+                        type: integer
+                      recruitRequirements:
+                        type: string
+        required: true
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 更新成功
+          headers: {}
+      security:
+        - token: []
+    get:
+      summary: 获取项目详情
+      deprecated: false
+      description: 获取项目的详细信息
+      operationId: getProjectDetail
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          projectId:
+                            type: integer
+                            example: 201
+                          name:
+                            type: string
+                            example: 基于AI的校园组队平台
+                          belongTrack:
+                            type: string
+                            example: 大创
+                          level:
+                            type: integer
+                            example: 2
+                          projectType:
+                            type: string
+                            example: 创新训练
+                          projectIntro:
+                            type: string
+                            example: 本项目旨在利用人工智能技术...
+                          projectFeatures:
+                            type: string
+                            example: 智能匹配、实时沟通
+                          tags:
+                            type: string
+                            example: AI,组队
+                          allowCrossMajor:
+                            type: boolean
+                            example: true
+                          publisherInfo:
+                            type: object
+                            description: 发布人信息（若匿名则只显示“匿名用户”）
+                            properties:
+                              userId:
+                                type: integer
+                                example: 10001
+                              nickname:
+                                type: string
+                                example: 张三
+                              avatar:
+                                type: string
+                                example: https://example.com/avatar.jpg
+                          deadlineRecruit:
+                            type: string
+                            format: date-time
+                            example: '2024-12-31T23:59:59Z'
+                          status:
+                            type: integer
+                            example: 2
+                          auditStatus:
+                            type: integer
+                            example: 1
+                          viewCount:
+                            type: integer
+                            example: 156
+                          favoriteCount:
+                            type: integer
+                            example: 23
+                          applyCount:
+                            type: integer
+                            example: 8
+                          releaseTime:
+                            type: string
+                            format: date-time
+                            example: '2024-01-01T10:00:00Z'
+                          roleRequirements:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                requirementId:
+                                  type: integer
+                                  example: 301
+                                role:
+                                  type: string
+                                  example: 前端开发
+                                memberQuota:
+                                  type: integer
+                                  example: 2
+                                currentMembers:
+                                  type: integer
+                                  example: 1
+                                recruitRequirements:
+                                  type: string
+                                  example: 熟悉Vue.js
+          headers: {}
+      security:
+        - token: []
+  /project/list/my-published:
+    get:
+      summary: 获取我发布的项目列表
+      deprecated: false
+      description: 对应功能 F-07, UI原型“我发起的项目”
+      operationId: getMyPublishedProjects
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: status
+          in: query
+          description: 按项目状态筛选
+          required: false
+          schema:
+            type: integer
+        - name: auditStatus
+          in: query
+          description: 按审核状态筛选
+          required: false
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            projectId:
+                              type: integer
+                            name:
+                              type: string
+                            belongTrack:
+                              type: string
+                            status:
+                              type: integer
+                            auditStatus:
+                              type: integer
+                            releaseTime:
+                              type: string
+                              format: date-time
+                            viewCount:
+                              type: integer
+                            applyCount:
+                              type: integer
+                            totalRoles:
+                              type: integer
+                              description: 总需人数
+                            filledRoles:
+                              type: integer
+                              description: 已招募人数
+          headers: {}
+      security:
+        - token: []
+  /project/{projectId}/status:
+    patch:
+      summary: 更新项目状态
+      deprecated: false
+      description: 对应功能 F-07 (下架、关闭)
+      operationId: updateProjectStatus
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: integer
+                  description: 要更新的状态：0-草拟 1-实施 2-招募中 3-完成 4-终止
+                  enum:
+                    - 0
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                  example: 3
+        required: true
+      responses:
+        '200':
+          description: 状态更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 状态更新成功
+          headers: {}
+      security:
+        - token: []
+  /project/{projectId}/stats:
+    get:
+      summary: 获取项目统计数据
+      deprecated: false
+      description: 获取项目的浏览、收藏、申请等统计数据
+      operationId: getProjectStats
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          viewCount:
+                            type: integer
+                            example: 156
+                          favoriteCount:
+                            type: integer
+                            example: 23
+                          applyCount:
+                            type: integer
+                            example: 8
+                          applicationTrend:
+                            type: array
+                            description: 近7天申请趋势
+                            items:
+                              type: object
+                              properties:
+                                date:
+                                  type: string
+                                  format: date
+                                  example: '2024-01-01'
+                                count:
+                                  type: integer
+                                  example: 2
+          headers: {}
+      security:
+        - token: []
+  /project/list:
+    get:
+      summary: 首页项目卡片流
+      deprecated: false
+      description: 对应功能 F-08, UI原型“项目广场”，获取项目列表
+      operationId: getProjectList
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: track
+          in: query
+          description: 所属赛道筛选
+          required: false
+          schema:
+            type: string
+        - name: role
+          in: query
+          description: 所需角色筛选
+          required: false
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: 排序：latest(最新) hot(最热) deadline(截止最近)
+          required: false
+          schema:
+            type: string
+            enum:
+              - latest
+              - hot
+              - deadline
+        - name: keyword
+          in: query
+          description: 搜索关键词
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProjectListItem'
+          headers: {}
+      security: []
+  /favorite/project/{projectId}:
+    post:
+      summary: 收藏/取消收藏项目
+      deprecated: false
+      description: 对应功能 F-09，收藏或取消收藏项目（切换操作）
+      operationId: toggleFavoriteProject
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          isFavored:
+                            type: boolean
+                            description: 当前操作后的状态：true-已收藏 false-未收藏
+                            example: true
+          headers: {}
+      security:
+        - token: []
+  /follow/{userId}:
+    post:
+      summary: 关注/取消关注发布者
+      deprecated: false
+      description: 对应功能 F-09，关注或取消关注用户（切换操作）
+      operationId: toggleFollowUser
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: userId
+          in: path
+          description: 被关注者ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          isFollowed:
+                            type: boolean
+                            description: 当前操作后的状态：true-已关注 false-未关注
+                            example: true
+          headers: {}
+      security:
+        - token: []
+  /project/{projectId}/similar:
+    get:
+      summary: 获取相似项目
+      deprecated: false
+      description: 对应功能 F-10，获取相似项目推荐
+      operationId: getSimilarProjects
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProjectListItem'
+          headers: {}
+      security:
+        - token: []
+  /project/match:
+    get:
+      summary: 智能匹配项目
+      deprecated: false
+      description: 对应功能 F-11，根据用户画像智能匹配推荐项目
+      operationId: getMatchedProjects
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProjectListItem'
+          headers: {}
+      security:
+        - token: []
+  /talent/card:
+    post:
+      summary: 创建/更新人才卡片
+      deprecated: false
+      description: 对应功能 F-13，创建或更新人才卡片
+      operationId: upsertTalentCard
+      tags:
+        - 3. 人才广场
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+                - cardTitle
+                - targetDirection
+                - expectedCompetition
+                - expectedRole
+              properties:
+                status:
+                  type: integer
+                  description: 卡片状态：0-关闭 1-开启 2-已组队完成
+                  enum:
+                    - 0
+                    - 1
+                    - 2
+                  example: 1
+                displayName:
+                  type: string
+                  description: 展示姓名（可匿名）
+                  example: 张同学
+                cardTitle:
+                  type: string
+                  description: 卡片标题
+                  example: 寻找大创队友
+                targetDirection:
+                  type: string
+                  description: 期望方向
+                  example: 后端开发/算法/产品
+                expectedCompetition:
+                  type: string
+                  description: 期望参赛
+                  example: 大创/挑战杯/互联网+
+                expectedRole:
+                  type: string
+                  description: 期望角色（队员/队长）
+                  example: 队员
+                selfStatement:
+                  type: string
+                  description: 自我陈述
+                  example: 有丰富项目经验，熟悉Spring Boot和Python
+                skillTags:
+                  type: string
+                  description: 技能标签（逗号分隔）
+                  example: Java,Python,Spring Boot
+                resumeFileId:
+                  type: integer
+                  description: 简历附件文件ID（通过上传接口获取，targetType=6）
+                  example: 10003
+                portfolioFileId:
+                  type: integer
+                  description: 作品集文件ID（通过上传接口获取，targetType=6）
+                  example: 10004
+                githubUrl:
+                  type: string
+                  description: GitHub地址
+                  example: https://github.com/username
+        required: true
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      cardId:
+                        type: integer
+                        example: 601
+                      message:
+                        type: string
+                        example: 操作成功
+          headers: {}
+      security:
+        - token: []
+  /talent/card/my:
+    get:
+      summary: 获取我的人才卡片
+      deprecated: false
+      description: 获取当前用户的人才卡片信息
+      operationId: getMyTalentCard
+      tags:
+        - 3. 人才广场
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      cardId:
+                        type: integer
+                        example: 601
+                      status:
+                        type: integer
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        example: 1
+                      isVisible:
+                        type: boolean
+                        example: true
+                      cardTitle:
+                        type: string
+                        example: 寻找大创队友
+                      targetDirection:
+                        type: string
+                        example: 后端开发/算法/产品
+                      expectedCompetition:
+                        type: string
+                        example: 大创/挑战杯/互联网+
+                      expectedRole:
+                        type: string
+                        example: 队员
+                      selfStatement:
+                        type: string
+                        example: 有丰富项目经验，熟悉Spring Boot和Python
+                      skillTags:
+                        type: string
+                        example: Java,Python,Spring Boot
+                      resumeFile:
+                        type: object
+                        properties:
+                          fileId:
+                            type: integer
+                            example: 10003
+                          fileName:
+                            type: string
+                            example: 简历_张三.pdf
+                          fileUrl:
+                            type: string
+                            example: https://example.com/resume/10003.pdf
+                          fileSize:
+                            type: integer
+                            example: 1024000
+                      portfolioFile:
+                        type: object
+                        properties:
+                          fileId:
+                            type: integer
+                            example: 10004
+                          fileName:
+                            type: string
+                            example: 作品集_张三.zip
+                          fileUrl:
+                            type: string
+                            example: https://example.com/portfolio/10004.zip
+                          fileSize:
+                            type: integer
+                            example: 5120000
+                      githubUrl:
+                        type: string
+                        example: https://github.com/username
+                      viewCount:
+                        type: integer
+                        example: 56
+                      inviteCount:
+                        type: integer
+                        example: 3
+                      updateTime:
+                        type: string
+                        format: date-time
+                        example: '2024-01-01T10:00:00Z'
+          headers: {}
+      security:
+        - token: []
+  /talent/list:
+    get:
+      summary: 人才卡片列表
+      deprecated: false
+      description: 对应功能 F-14，获取人才广场卡片列表
+      operationId: getTalentList
+      tags:
+        - 3. 人才广场
+        - 人才广场
+      parameters:
+        - name: major
+          in: query
+          description: 专业筛选
+          required: false
+          schema:
+            type: string
+        - name: grade
+          in: query
+          description: 年级筛选
+          required: false
+          schema:
+            type: string
+        - name: skillTags
+          in: query
+          description: 技能标签筛选（逗号分隔）
+          required: false
+          schema:
+            type: string
+        - name: expectedCompetition
+          in: query
+          description: 期望参赛筛选
+          required: false
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: 排序：match(智能匹配) latest(最新活跃)
+          required: false
+          schema:
+            type: string
+            enum:
+              - match
+              - latest
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TalentCardItem'
+          headers: {}
+      security: []
+  /talent/card/visibility:
+    patch:
+      summary: 切换人才卡片可见性
+      deprecated: false
+      description: 对应功能 F-15，切换人才卡片的可见状态
+      operationId: toggleTalentVisibility
+      tags:
+        - 3. 人才广场
+        - 人才广场
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - isVisible
+              properties:
+                isVisible:
+                  type: boolean
+                  description: true-可见 false-不可见
+                  example: true
+        required: true
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          isVisible:
+                            type: boolean
+                            description: 设置后的可见状态
+                            example: true
+          headers: {}
+      security:
+        - token: []
+  /talent/invite:
+    post:
+      summary: 发送邀请
+      deprecated: false
+      description: 对应功能 F-16，队长向人才发送项目邀请
+      operationId: sendTalentInvitation
+      tags:
+        - 3. 人才广场
+        - 人才广场
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - talentCardId
+                - projectId
+                - projectRole
+              properties:
+                talentCardId:
+                  type: integer
+                  description: 被邀请的人才卡片ID
+                  example: 601
+                projectId:
+                  type: integer
+                  description: 关联的项目ID
+                  example: 201
+                projectRole:
+                  type: string
+                  description: 邀请担任的角色
+                  example: 后端开发
+                invitationMessage:
+                  type: string
+                  description: 邀请附言
+                  example: 看到你的技术栈很匹配，欢迎加入我们团队！
+        required: true
+      responses:
+        '200':
+          description: 邀请发送成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          invitationId:
+                            type: integer
+                            example: 701
+                          message:
+                            type: string
+                            example: 邀请发送成功
+                          sessionId:
+                            type: integer
+                            description: 创建的会话ID
+                            example: 502
+          headers: {}
+      security:
+        - token: []
+  /chat/sessions:
+    get:
+      summary: 获取会话列表
+      deprecated: false
+      description: 对应功能 F-17，获取当前用户的所有会话
+      operationId: getChatSessions
+      tags:
+        - 4. 消息中心
+        - 消息中心
+      parameters:
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            sessionId:
+                              type: integer
+                              description: 会话ID
+                            targetUser:
+                              type: object
+                              description: 对方用户信息
+                              properties:
+                                userId:
+                                  type: integer
+                                nickname:
+                                  type: string
+                                avatar:
+                                  type: string
+                            lastMessage:
+                              type: string
+                              description: 最后一条消息内容
+                            lastMsgTime:
+                              type: string
+                              format: date-time
+                              description: 最后消息时间
+                            unreadCount:
+                              type: integer
+                              description: 当前用户未读数
+                            recruitStatus:
+                              type: string
+                              description: 沟通状态（可选，用于状态流转）
+                              deprecated: true
+                            projectId:
+                              type: integer
+                              description: 关联项目ID
+                            projectName:
+                              type: string
+                              description: 关联项目名称
+              example:
+                code: 200
+                message: success
+                data:
+                  - sessionId: 0
+                    targetUser:
+                      userId: 0
+                      nickname: string
+                      avatar: string
+                    lastMessage: string
+                    lastMsgTime: '2019-08-24T14:15:22.123Z'
+                    unreadCount: 0
+                    projectId: 0
+                    projectName: string
+          headers: {}
+      security:
+        - token: []
+  /chat/message:
+    post:
+      summary: 发送消息
+      deprecated: true
+      description: 对应功能 F-18，在会话中发送消息
+      operationId: sendMessage
+      tags:
+        - 4. 消息中心
+        - 消息中心
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sessionId
+                - receiverId
+                - content
+                - msgType
+              properties:
+                sessionId:
+                  type: integer
+                  description: 会话ID
+                  example: 501
+                receiverId:
+                  type: integer
+                  description: 接收方ID
+                  example: 10002
+                content:
+                  type: string
+                  description: 消息内容
+                  example: 你好，我对你的项目很感兴趣
+                msgType:
+                  type: integer
+                  description: 类型：1-文字 2-图片 3-系统通知 4-投递卡片 5-邀请卡片
+                  enum:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                    - 5
+                  example: 1
+        required: true
+      responses:
+        '200':
+          description: 发送成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          messageId:
+                            type: integer
+                            example: 801
+                          sendTime:
+                            type: string
+                            format: date-time
+                            example: '2024-01-01T10:30:00Z'
+          headers: {}
+      security:
+        - token: []
+  /chat/messages:
+    get:
+      summary: 获取消息历史
+      deprecated: false
+      description: 对应功能 F-18，获取会话的历史消息
+      operationId: getChatMessages
+      tags:
+        - 4. 消息中心
+        - 消息中心
+      parameters:
+        - name: sessionId
+          in: query
+          description: 会话ID
+          required: true
+          schema:
+            type: integer
+        - name: before
+          in: query
+          description: 查询此时间之前的消息（用于分页）
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          description: 页码（若不用before）
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MessageItem'
+          headers: {}
+      security:
+        - token: []
+  /chat/session/{sessionId}/status:
+    patch:
+      summary: 更新沟通状态
+      deprecated: false
+      description: 对应功能 F-19，更新招募沟通状态
+      operationId: updateRecruitStatus
+      tags:
+        - 4. 消息中心
+        - 消息中心
+      parameters:
+        - name: sessionId
+          in: path
+          description: 会话ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - recruitStatus
+                - operator
+              properties:
+                recruitStatus:
+                  type: string
+                  description: communicating/offer/reject
+                  enum:
+                    - communicating
+                    - offer
+                    - reject
+                  example: offer
+                operator:
+                  type: string
+                  description: captain/student
+                  enum:
+                    - captain
+                    - student
+                  example: captain
+        required: true
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          recruitStatus:
+                            type: string
+                            description: 更新后的状态
+                            example: offer
+          headers: {}
+      security:
+        - token: []
+  /contact/exchange/request:
+    post:
+      summary: 请求交换联系方式
+      deprecated: false
+      description: 对应功能 F-20，发起交换联系方式请求
+      operationId: requestContactExchange
+      tags:
+        - 4. 消息中心
+        - 消息中心
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sessionId
+                - receiverId
+              properties:
+                sessionId:
+                  type: integer
+                  description: 会话ID
+                  example: 501
+                receiverId:
+                  type: integer
+                  description: 接收方ID
+                  example: 10002
+                projectId:
+                  type: integer
+                  description: 关联项目ID（可选）
+                  example: 201
+        required: true
+      responses:
+        '200':
+          description: 请求已发送
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          exchangeId:
+                            type: integer
+                            example: 901
+                          message:
+                            type: string
+                            example: 请求已发送，等待对方确认
+          headers: {}
+      security:
+        - token: []
+  /contact/exchange/{exchangeId}/respond:
+    post:
+      summary: 处理交换请求
+      deprecated: false
+      description: 对应功能 F-20，同意或拒绝联系方式交换请求
+      operationId: respondContactExchange
+      tags:
+        - 4. 消息中心
+        - 消息中心
+      parameters:
+        - name: exchangeId
+          in: path
+          description: 交换记录ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agree
+              properties:
+                agree:
+                  type: boolean
+                  description: true-同意 false-拒绝
+                  example: true
+        required: true
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 操作成功
+                          contactInfo:
+                            type: object
+                            description: 若同意，返回对方的联系方式
+                            properties:
+                              phone:
+                                type: string
+                                example: 138****1234
+                              email:
+                                type: string
+                                example: zh***@example.com
+                              wechat:
+                                type: string
+                                example: wechat123
+                              qq:
+                                type: string
+                                example: '12345678'
+          headers: {}
+      security:
+        - token: []
+  /contact/{userId}:
+    get:
+      summary: 获取联系方式
+      deprecated: false
+      description: 对应功能 F-04，交换成功后获取对方的联系方式
+      operationId: getContactInfo
+      tags:
+        - 4. 消息中心
+        - 消息中心
+      parameters:
+        - name: userId
+          in: path
+          description: 用户ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          phone:
+                            type: string
+                            description: 手机号（脱敏或完整，取决于权限）
+                          email:
+                            type: string
+                            description: 邮箱（脱敏或完整，取决于权限）
+                          wechat:
+                            type: string
+                            description: 微信号（用户自定义公开的）
+                          qq:
+                            type: string
+                            description: QQ号（用户自定义公开的）
+          headers: {}
+      security:
+        - token: []
+  /team/join-confirm:
+    post:
+      summary: 确认入队
+      deprecated: false
+      description: 对应功能 F-21，学生确认加入团队
+      operationId: confirmJoinTeam
+      tags:
+        - 4. 消息中心
+        - 消息中心
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - projectId
+                - sessionId
+              properties:
+                projectId:
+                  type: integer
+                  description: 项目ID
+                  example: 201
+                sessionId:
+                  type: integer
+                  description: 会话ID
+                  example: 501
+        required: true
+      responses:
+        '200':
+          description: 加入成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 恭喜你加入团队！
+                          teamId:
+                            type: integer
+                            description: 团队（项目）ID
+                            example: 201
+                          suggestHideTalent:
+                            type: boolean
+                            description: 是否建议隐藏人才卡片（如果已开启）
+                            example: true
+          headers: {}
+      security:
+        - token: []
+  /ws-chat:
+    get:
+      summary: WebSocket/STOMP 连接说明
+      deprecated: false
+      description: |
+        实际为 WebSocket 连接端点：ws://{host}:{port}/ws-chat
+
+        建议前端：
+        - 使用 STOMP 客户端连接 /ws-chat
+        - 成功连接后：
+          - 通过 /app/chat/send 发送消息
+          - 订阅 /topic/chat/{sessionId} 接收消息
+      tags:
+        - 4. 消息中心
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '101':
+          description: WebSocket 协议切换（文档占位用）
+          headers: {}
+      security: []
+  /stomp/chat/send:
+    post:
+      summary: 通过 STOMP 发送聊天消息（文档用接口）
+      deprecated: false
+      description: |
+        这是一个“文档占位”的 HTTP 接口，用来在 Apifox 中描述 **STOMP 发送消息** 的请求体结构。
+
+        实际运行时：
+        - 前端应通过 STOMP 发送到目的地：/app/chat/send
+        - 请求体为本接口的 requestBody 中定义的 JSON 结构（StompSendMessageRequest）
+        - 发送成功后，服务端会向主题 /topic/chat/{sessionId} 推送 ChatMessageResponse
+
+        前端 STOMP 示例：
+        stompClient.send('/app/chat/send', {}, JSON.stringify({
+          senderId: 10001,
+          sessionId: 501,
+          receiverId: 10002,
+          content: '你好',
+          msgType: 1
+        }));
+      tags:
+        - 4. 消息中心
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StompSendMessageRequest'
+        required: true
+      responses:
+        '200':
+          description: 实际 STOMP 调用无 HTTP 响应，此处仅做文档占位
+          content:
+            application/json:
+              schema:
+                type: object
+                description: |
+                  STOMP 发送后不会有真正的 HTTP 响应。
+                  这里仅返回一个简要确认结构，方便在 Apifox 调试时查看。
+                properties:
+                  message:
+                    type: string
+                    example: sent via STOMP
+          headers: {}
+      security: []
+  /stomp/topic/chat/{sessionId}:
+    get:
+      summary: 订阅聊天消息（文档用说明）
+      deprecated: false
+      description: |
+        这是一个“文档占位”的 GET，用来在 Apifox 中描述 **订阅的消息体结构**。
+
+        实际运行时：
+        - 前端通过 STOMP 订阅：/topic/chat/{sessionId}
+        - 每当有新消息时，服务端会推送 ChatMessageResponse
+
+        前端 STOMP 示例：
+        stompClient.subscribe('/topic/chat/501', frame => {
+          const msg = JSON.parse(frame.body);
+          // msg 结构即 ChatMessageResponse
+        });
+      tags:
+        - 4. 消息中心
+      parameters:
+        - name: sessionId
+          in: path
+          description: 会话ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+            example: 501
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 推送消息体结构说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageResponse'
+          headers: {}
+      security: []
+  /team/my:
+    get:
+      summary: 获取我的团队列表
+      deprecated: false
+      description: 对应功能 F-22, UI原型“我加入的项目”，获取我加入的项目、申请中的项目等
+      operationId: getMyTeams
+      tags:
+        - 5. 我的团队
+        - 我的团队
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          joined:
+                            type: array
+                            description: 我加入的项目（状态为在队）
+                            items:
+                              type: object
+                              properties:
+                                projectId:
+                                  type: integer
+                                name:
+                                  type: string
+                                belongTrack:
+                                  type: string
+                                role:
+                                  type: string
+                                  description: 你在团队中的角色
+                                status:
+                                  type: integer
+                                  description: 项目状态
+                                projectLeader:
+                                  type: string
+                                  description: 队长昵称
+                                unreadPost:
+                                  type: boolean
+                                  description: 是否有未读的内部讨论
+                          applying:
+                            type: array
+                            description: 申请中的项目
+                            items:
+                              type: object
+                              properties:
+                                projectId:
+                                  type: integer
+                                name:
+                                  type: string
+                                applyTime:
+                                  type: string
+                                  format: date-time
+                                status:
+                                  type: integer
+                                  description: 申请状态
+                          invited:
+                            type: array
+                            description: 被邀请的项目
+                            items:
+                              type: object
+                              properties:
+                                projectId:
+                                  type: integer
+                                name:
+                                  type: string
+                                invitationTime:
+                                  type: string
+                                  format: date-time
+                                inviter:
+                                  type: string
+                                  description: 邀请人昵称
+                          rejected:
+                            type: array
+                            description: 被拒/已退出的项目
+                            items:
+                              type: object
+                              properties:
+                                projectId:
+                                  type: integer
+                                name:
+                                  type: string
+                                status:
+                                  type: integer
+                                  description: 状态
+          headers: {}
+      security:
+        - token: []
+  /team/{projectId}:
+    get:
+      summary: 获取团队详情
+      deprecated: false
+      description: 对应功能 F-22，获取团队详细信息
+      operationId: getTeamDetail
+      tags:
+        - 5. 我的团队
+        - 我的团队
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          projectId:
+                            type: integer
+                          name:
+                            type: string
+                          projectIntro:
+                            type: string
+                          status:
+                            type: integer
+                          members:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                userId:
+                                  type: integer
+                                nickname:
+                                  type: string
+                                avatar:
+                                  type: string
+                                role:
+                                  type: string
+                                  description: 在队角色
+                                isCaptain:
+                                  type: boolean
+                                  description: 是否是队长
+                                joinTime:
+                                  type: string
+                                  format: date-time
+                          createdTime:
+                            type: string
+                            format: date-time
+                          updateTime:
+                            type: string
+                            format: date-time
+          headers: {}
+      security:
+        - token: []
+  /team/{projectId}/post:
+    post:
+      summary: 发布团队内部帖子
+      deprecated: false
+      description: 对应功能 F-23，在团队内部讨论区发布帖子
+      operationId: createTeamPost
+      tags:
+        - 5. 我的团队
+        - 我的团队
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+              properties:
+                title:
+                  type: string
+                  description: 帖子标题
+                  example: 项目进度会议通知
+                content:
+                  type: string
+                  description: 帖子内容
+                  example: 本周六下午3点召开项目进度会议，请各位成员准时参加。
+                attachments:
+                  type: array
+                  description: 附件URL列表
+                  items:
+                    type: string
+                  example:
+                    - https://example.com/doc1.pdf
+        required: true
+      responses:
+        '200':
+          description: 发布成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          postId:
+                            type: integer
+                            example: 1001
+                          message:
+                            type: string
+                            example: 发布成功
+          headers: {}
+      security:
+        - token: []
+  /team/{projectId}/posts:
+    get:
+      summary: 获取团队讨论列表
+      deprecated: false
+      description: 对应功能 F-23，获取团队内部讨论区帖子列表
+      operationId: getTeamPosts
+      tags:
+        - 5. 我的团队
+        - 我的团队
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            postId:
+                              type: integer
+                            title:
+                              type: string
+                            content:
+                              type: string
+                              description: 内容摘要
+                            publisher:
+                              type: object
+                              properties:
+                                nickname:
+                                  type: string
+                                avatar:
+                                  type: string
+                            createdTime:
+                              type: string
+                              format: date-time
+                            commentCount:
+                              type: integer
+                            isRead:
+                              type: boolean
+                              description: 当前用户是否已读
+          headers: {}
+      security:
+        - token: []
+  /team/{projectId}/task:
+    post:
+      summary: 创建任务
+      deprecated: false
+      description: 对应功能 F-24，在团队内创建任务
+      operationId: createTeamTask
+      tags:
+        - 5. 我的团队
+        - 我的团队
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - assigneeId
+              properties:
+                title:
+                  type: string
+                  description: 任务标题
+                  example: 完成项目原型设计
+                description:
+                  type: string
+                  description: 任务描述
+                  example: 使用Figma完成项目主要页面的原型设计
+                assigneeId:
+                  type: integer
+                  description: 负责人ID
+                  example: 10003
+                deadline:
+                  type: string
+                  format: date
+                  description: 截止日期
+                  example: '2024-02-01'
+        required: true
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          taskId:
+                            type: integer
+                            example: 1101
+          headers: {}
+      security:
+        - token: []
+  /team/task/{taskId}:
+    patch:
+      summary: 更新任务状态
+      deprecated: false
+      description: 对应功能 F-24，更新团队任务的状态
+      operationId: updateTaskStatus
+      tags:
+        - 5. 我的团队
+        - 我的团队
+      parameters:
+        - name: taskId
+          in: path
+          description: 任务ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: integer
+                  description: 0-待办 1-进行中 2-已完成
+                  enum:
+                    - 0
+                    - 1
+                    - 2
+                  example: 2
+        required: true
+      responses:
+        '200':
+          description: 状态更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 状态更新成功
+          headers: {}
+      security:
+        - token: []
+  /team/{projectId}/member/{userId}:
+    delete:
+      summary: 移除成员
+      deprecated: false
+      description: 对应功能 F-25，队长移除团队成员
+      operationId: removeTeamMember
+      tags:
+        - 5. 我的团队
+        - 我的团队
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          description: 要移除的成员ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 移除成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 成员已移除
+          headers: {}
+      security:
+        - token: []
+  /team/{projectId}/quit:
+    post:
+      summary: 成员退出
+      deprecated: false
+      description: 对应功能 F-25，成员主动退出团队
+      operationId: quitTeam
+      tags:
+        - 5. 我的团队
+        - 我的团队
+      parameters:
+        - name: projectId
+          in: path
+          description: 项目ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 退出成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 已成功退出团队
+          headers: {}
+      security:
+        - token: []
+  /community/post:
+    post:
+      summary: 发布帖子
+      deprecated: false
+      description: 对应功能 F-27，发布新帖子
+      operationId: createCommunityPost
+      tags:
+        - 6. 公共社区
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - section
+                - title
+                - content
+              properties:
+                section:
+                  type: integer
+                  description: 板块：1-技术交流 2-灵感分享 3-组队经验
+                  enum:
+                    - 1
+                    - 2
+                    - 3
+                  example: 1
+                title:
+                  type: string
+                  description: 帖子标题
+                  example: 关于Spring Boot微服务架构的讨论
+                content:
+                  type: string
+                  description: 帖子内容
+                  example: 大家在微服务架构中如何实现服务间的认证和授权？
+                imageFileIds:
+                  type: array
+                  description: 图片文件ID列表（通过上传接口获取，targetType=3）
+                  items:
+                    type: integer
+                  example:
+                    - 10007
+                    - 10008
+        required: true
+      responses:
+        '200':
+          description: 发布成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      postId:
+                        type: integer
+                        example: 1201
+                      message:
+                        type: string
+                        example: 发布成功，待审核
+                      auditStatus:
+                        type: integer
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        example: 0
+          headers: {}
+      security:
+        - token: []
+  /community/posts:
+    get:
+      summary: 获取帖子列表
+      deprecated: false
+      description: 对应功能 F-26, F-29, UI原型“社区”，获取社区帖子列表
+      operationId: getCommunityPosts
+      tags:
+        - 6. 公共社区
+        - 公共社区
+      parameters:
+        - name: section
+          in: query
+          description: 板块筛选：1-技术交流 2-灵感分享 3-组队经验
+          required: false
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+        - name: type
+          in: query
+          description: recommend(推荐) latest(最新) hottest(最热)
+          required: false
+          schema:
+            type: string
+            enum:
+              - recommend
+              - latest
+              - hottest
+        - name: keyword
+          in: query
+          description: 搜索关键词
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CommunityPostItem'
+          headers: {}
+      security: []
+  /community/post/{postId}/comment:
+    post:
+      summary: 评论帖子
+      deprecated: false
+      description: 对应功能 F-27，对帖子发表评论
+      operationId: createComment
+      tags:
+        - 6. 公共社区
+        - 公共社区
+      parameters:
+        - name: postId
+          in: path
+          description: 帖子ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  description: 评论内容
+                  example: 这篇文章很有帮助，谢谢分享！
+                parentId:
+                  type: integer
+                  description: 父评论ID（回复某人时）
+                  example: 1301
+        required: true
+      responses:
+        '200':
+          description: 评论成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          commentId:
+                            type: integer
+                            example: 1305
+                          message:
+                            type: string
+                            example: 评论成功
+          headers: {}
+      security:
+        - token: []
+  /community/post/{postId}:
+    get:
+      summary: 获取帖子详情
+      deprecated: false
+      description: 对应功能 F-26，获取帖子详情（包含全文与图片）
+      operationId: getCommunityPostDetail
+      tags:
+        - 6. 公共社区
+        - 公共社区
+      parameters:
+        - name: postId
+          in: path
+          description: 帖子ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CommunityPostDetailItem'
+          headers: {}
+      security: []
+  /community/post/{postId}/comments:
+    get:
+      summary: 获取评论列表
+      deprecated: false
+      description: 获取指定帖子的评论列表（支持楼中楼）
+      operationId: getCommunityPostComments
+      tags:
+        - 6. 公共社区
+        - 公共社区
+      parameters:
+        - name: postId
+          in: path
+          description: 帖子ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CommunityCommentItem'
+          headers: {}
+      security: []
+  /community/comment/{commentId}:
+    delete:
+      summary: 删除评论（仅自己）
+      deprecated: false
+      description: 删除当前登录用户自己的评论（可用于“删除自己评论”需求）
+      operationId: deleteMyComment
+      tags:
+        - 6. 公共社区
+        - 公共社区
+      parameters:
+        - name: commentId
+          in: path
+          description: 评论ID
+          required: true
+          example: 1305
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          deleted:
+                            type: boolean
+                            example: true
+                          commentId:
+                            type: integer
+                            example: 1305
+          headers: {}
+      security:
+        - token: []
+  /community/like:
+    post:
+      summary: 点赞
+      deprecated: false
+      description: 对应功能 F-27，点赞或取消点赞（切换操作）
+      operationId: toggleLike
+      tags:
+        - 6. 公共社区
+        - 公共社区
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - targetType
+                - targetId
+              properties:
+                targetType:
+                  type: integer
+                  description: 1-帖子 2-评论
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
+                targetId:
+                  type: integer
+                  description: 目标ID
+                  example: 1201
+        required: true
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          isLiked:
+                            type: boolean
+                            description: 当前操作后的状态：true-已点赞 false-取消点赞
+                            example: true
+                          likeCount:
+                            type: integer
+                            description: 目标当前点赞总数
+                            example: 42
+          headers: {}
+      security:
+        - token: []
+  /search:
+    get:
+      summary: 全局搜索
+      deprecated: false
+      description: 对应功能 F-28，全局搜索项目、人才、帖子、用户
+      operationId: globalSearch
+      tags:
+        - 6. 公共社区
+        - 公共社区
+      parameters:
+        - name: keyword
+          in: query
+          description: 搜索关键词
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: 搜索类型，默认全部
+          required: false
+          schema:
+            type: string
+            enum:
+              - project
+              - talent
+              - post
+              - user
+        - name: sort
+          in: query
+          description: 排序
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          projects:
+                            type: array
+                            description: 项目结果列表
+                            items:
+                              $ref: '#/components/schemas/ProjectListItem'
+                          talents:
+                            type: array
+                            description: 人才结果列表
+                            items:
+                              $ref: '#/components/schemas/TalentCardItem'
+                          posts:
+                            type: array
+                            description: 帖子结果列表
+                            items:
+                              $ref: '#/components/schemas/CommunityPostItem'
+                          users:
+                            type: array
+                            description: 用户结果列表
+                            items:
+                              type: object
+                              properties:
+                                userId:
+                                  type: integer
+                                nickname:
+                                  type: string
+                                avatar:
+                                  type: string
+                                major:
+                                  type: string
+                          total:
+                            type: integer
+                            description: 总计命中数
+                            example: 156
+          headers: {}
+      security: []
+  /admin/auth/pending:
+    get:
+      summary: 获取待审核列表
+      deprecated: false
+      description: 对应功能 F-30，获取待审核的身份认证申请列表（包含证明材料）
+      operationId: getPendingAuths
+      tags:
+        - 7. 管理员后台
+      parameters:
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 25
+                      page:
+                        type: integer
+                        example: 1
+                      size:
+                        type: integer
+                        example: 10
+                      list:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            authId:
+                              type: integer
+                              example: 10001
+                            studentId:
+                              type: string
+                              example: '20210001'
+                            realName:
+                              type: string
+                              example: 张三
+                            major:
+                              type: string
+                              example: 计算机科学与技术
+                            grade:
+                              type: string
+                              example: 2021级
+                            email:
+                              type: string
+                              example: zhangsan@stu.edu.cn
+                            materials:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  materialId:
+                                    type: integer
+                                    example: 1
+                                  materialType:
+                                    type: integer
+                                    enum:
+                                      - 1
+                                      - 2
+                                      - 3
+                                      - 4
+                                    example: 1
+                                  fileInfo:
+                                    type: object
+                                    properties:
+                                      fileId:
+                                        type: integer
+                                        example: 10009
+                                      fileName:
+                                        type: string
+                                        example: 学生证_张三.jpg
+                                      fileUrl:
+                                        type: string
+                                        example: https://example.com/files/10009.jpg
+                                      fileSize:
+                                        type: integer
+                                        example: 2048576
+                            applyTime:
+                              type: string
+                              format: date-time
+                              example: '2024-01-01T10:00:00Z'
+          headers: {}
+      security:
+        - token: []
+  /public/privacy-policy/current:
+    get:
+      summary: 获取当前政策
+      deprecated: false
+      description: 对应功能 F-36，获取当前生效的隐私政策
+      operationId: getCurrentPrivacyPolicy
+      tags:
+        - 7. 管理员后台
+        - 通用接口
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          version:
+                            type: string
+                            example: v2.0.0
+                          title:
+                            type: string
+                            example: 隐私政策（2024版）
+                          content:
+                            type: string
+                            example: 我们非常重视您的隐私...
+                          effectiveDate:
+                            type: string
+                            format: date
+                            example: '2024-03-01'
+          headers: {}
+      security: []
+  /admin/auth/{authId}/audit:
+    post:
+      summary: 审核认证
+      deprecated: false
+      description: 对应功能 F-30，审核身份认证申请（支持逐项审核材料）
+      operationId: auditAuth
+      tags:
+        - 7. 管理员后台
+      parameters:
+        - name: authId
+          in: path
+          description: 认证申请ID
+          required: true
+          example: 10001
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - result
+              properties:
+                result:
+                  type: integer
+                  description: 1-通过 2-驳回
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
+                remark:
+                  type: string
+                  description: 整体审核备注/驳回原因
+                  example: 学号信息与数据库不匹配
+                materialResults:
+                  type: array
+                  description: 材料逐项审核结果（可选）
+                  items:
+                    type: object
+                    properties:
+                      materialId:
+                        type: integer
+                        description: 材料ID
+                        example: 1
+                      result:
+                        type: integer
+                        description: 1-通过 2-驳回
+                        enum:
+                          - 1
+                          - 2
+                        example: 1
+                      remark:
+                        type: string
+                        description: 材料审核备注
+                        example: 清晰可见
+        required: true
+      responses:
+        '200':
+          description: 审核完成
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 审核完成
+                      authStatus:
+                        type: integer
+                        enum:
+                          - 0
+                          - 1
+                          - 2
+                        example: 1
+          headers: {}
+      security:
+        - token: []
+  /admin/audit/contents:
+    get:
+      summary: 获取待审核内容
+      deprecated: false
+      description: 对应功能 F-31，获取待审核的项目、帖子等内容
+      operationId: getPendingContents
+      tags:
+        - 7. 管理员后台
+        - 管理员后台
+      parameters:
+        - name: type
+          in: query
+          description: 内容类型筛选
+          required: false
+          schema:
+            type: string
+            enum:
+              - project
+              - post
+              - comment
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            contentId:
+                              type: integer
+                            contentType:
+                              type: string
+                            title:
+                              type: string
+                            content:
+                              type: string
+                            publisher:
+                              type: object
+                              properties: {}
+                            publishTime:
+                              type: string
+                              format: date-time
+                            status:
+                              type: integer
+          headers: {}
+      security:
+        - token: []
+  /admin/audit/{contentType}/{contentId}:
+    post:
+      summary: 审核内容
+      deprecated: false
+      description: 对应功能 F-31，审核项目、帖子等内容
+      operationId: auditContent
+      tags:
+        - 7. 管理员后台
+        - 管理员后台
+      parameters:
+        - name: contentType
+          in: path
+          description: 内容类型
+          required: true
+          example: ''
+          schema:
+            type: string
+            enum:
+              - project
+              - post
+              - comment
+        - name: contentId
+          in: path
+          description: 内容ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - result
+              properties:
+                result:
+                  type: integer
+                  description: 1-通过 2-驳回
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
+                reason:
+                  type: string
+                  description: 驳回/下架原因
+                  example: 内容涉及广告
+        required: true
+      responses:
+        '200':
+          description: 审核完成
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 审核完成
+          headers: {}
+      security:
+        - token: []
+  /admin/reports:
+    get:
+      summary: 获取举报列表
+      deprecated: false
+      description: 对应功能 F-32，获取待处理的举报列表
+      operationId: getReports
+      tags:
+        - 7. 管理员后台
+        - 管理员后台
+      parameters:
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            reportId:
+                              type: integer
+                            reporter:
+                              type: object
+                              description: 举报人信息
+                              properties: {}
+                            targetType:
+                              type: integer
+                              description: 举报对象类型
+                            targetSummary:
+                              type: string
+                              description: 举报内容摘要
+                            reason:
+                              type: string
+                              description: 举报原因
+                            evidenceImages:
+                              type: array
+                              items:
+                                type: string
+                              description: 证据图片
+                            status:
+                              type: integer
+                              description: 处理状态
+                            createdTime:
+                              type: string
+                              format: date-time
+          headers: {}
+      security:
+        - token: []
+  /admin/report/{reportId}/handle:
+    post:
+      summary: 处理举报
+      deprecated: false
+      description: 对应功能 F-32，处理举报
+      operationId: handleReport
+      tags:
+        - 7. 管理员后台
+        - 管理员后台
+      parameters:
+        - name: reportId
+          in: path
+          description: 举报ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              properties:
+                action:
+                  type: integer
+                  description: 1-驳回 2-删除内容 3-警告用户 4-封禁用户
+                  enum:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                  example: 2
+                reason:
+                  type: string
+                  description: 处理说明
+                  example: 内容违规，已删除
+        required: true
+      responses:
+        '200':
+          description: 处理完成
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 处理完成
+          headers: {}
+      security:
+        - token: []
+  /admin/stats/dashboard:
+    get:
+      summary: 获取数据看板
+      deprecated: false
+      description: 对应功能 F-33，获取运营数据统计
+      operationId: getDashboardStats
+      tags:
+        - 7. 管理员后台
+        - 管理员后台
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          dau:
+                            type: integer
+                            description: 日活用户数
+                            example: 1250
+                          newUsers:
+                            type: integer
+                            description: 新增用户数
+                            example: 86
+                          projectsPublished:
+                            type: integer
+                            description: 新增项目数
+                            example: 24
+                          teamsFormed:
+                            type: integer
+                            description: 组队成功数
+                            example: 12
+                          contentAuditPassRate:
+                            type: number
+                            description: 内容审核通过率
+                            example: 0.96
+          headers: {}
+      security:
+        - token: []
+  /admin/config:
+    get:
+      summary: 获取配置列表
+      deprecated: false
+      description: 对应功能 F-34，获取系统配置列表
+      operationId: getConfigs
+      tags:
+        - 7. 管理员后台
+        - 管理员后台
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            configKey:
+                              type: string
+                              description: 配置键
+                            configValue:
+                              type: string
+                              description: 配置值
+                            description:
+                              type: string
+                              description: 描述
+                            updateTime:
+                              type: string
+                              format: date-time
+          headers: {}
+      security:
+        - token: []
+  /admin/config/{configKey}:
+    put:
+      summary: 更新配置
+      deprecated: false
+      description: 对应功能 F-34，更新系统配置
+      operationId: updateConfig
+      tags:
+        - 7. 管理员后台
+        - 管理员后台
+      parameters:
+        - name: configKey
+          in: path
+          description: 配置键名
+          required: true
+          example: ''
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - configValue
+              properties:
+                configValue:
+                  type: string
+                  description: 新的配置值
+                  example: 'true'
+        required: true
+      responses:
+        '200':
+          description: 配置更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 配置更新成功
+          headers: {}
+      security:
+        - token: []
+  /admin/backup:
+    post:
+      summary: 创建备份
+      deprecated: false
+      description: 对应功能 F-35，创建数据备份
+      operationId: createBackup
+      tags:
+        - 7. 管理员后台
+        - 管理员后台
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - backupType
+              properties:
+                backupType:
+                  type: integer
+                  description: 1-全量 2-增量
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
+                tables:
+                  type: array
+                  description: 要备份的表（全量时可不填）
+                  items:
+                    type: string
+                  example:
+                    - user
+                    - project
+                    - message
+        required: true
+      responses:
+        '200':
+          description: 备份任务已创建
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          backupId:
+                            type: integer
+                            example: 1401
+                          message:
+                            type: string
+                            example: 备份任务已创建
+          headers: {}
+      security:
+        - token: []
+  /admin/backups:
+    get:
+      summary: 获取备份列表
+      deprecated: false
+      description: 对应功能 F-35，获取数据备份列表
+      operationId: getBackups
+      tags:
+        - 7. 管理员后台
+        - 管理员后台
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            backupId:
+                              type: integer
+                            backupName:
+                              type: string
+                            fileSize:
+                              type: integer
+                              description: 文件大小（字节）
+                            backupType:
+                              type: integer
+                              description: 备份类型
+                            status:
+                              type: integer
+                              description: 状态
+                            createdTime:
+                              type: string
+                              format: date-time
+          headers: {}
+      security:
+        - token: []
+  /admin/backup/{backupId}/restore:
+    post:
+      summary: 恢复备份
+      deprecated: false
+      description: 对应功能 F-35，从备份恢复数据
+      operationId: restoreBackup
+      tags:
+        - 7. 管理员后台
+        - 管理员后台
+      parameters:
+        - name: backupId
+          in: path
+          description: 备份ID
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 恢复任务已启动
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 恢复任务已启动
+          headers: {}
+      security:
+        - token: []
+  /admin/privacy-policy:
+    post:
+      summary: 创建新版本隐私政策
+      deprecated: false
+      description: 对应功能 F-36，创建新版本的隐私政策
+      operationId: createPrivacyPolicy
+      tags:
+        - 7. 管理员后台
+        - 管理员后台
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - version
+                - title
+                - content
+                - effectiveDate
+              properties:
+                version:
+                  type: string
+                  description: 版本号
+                  example: v2.0.0
+                title:
+                  type: string
+                  description: 政策标题
+                  example: 隐私政策（2024版）
+                content:
+                  type: string
+                  description: 政策内容
+                  example: 我们非常重视您的隐私...
+                effectiveDate:
+                  type: string
+                  format: date
+                  description: 生效日期
+                  example: '2024-03-01'
+        required: true
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          policyId:
+                            type: integer
+                            example: 1501
+                          message:
+                            type: string
+                            example: 创建成功
+          headers: {}
+      security:
+        - token: []
+  /common/upload/file:
+    post:
+      summary: 通用文件上传
+      deprecated: false
+      description: 上传任意类型文件，返回文件信息
+      operationId: uploadFile
+      tags:
+        - 8. 通用接口
+      parameters:
+        - name: targetType
+          in: query
+          description: 关联类型：1-用户简历 2-技能认证证书 3-帖子图片 4-评论图片 5-项目申请附件 6-人才卡片附件 7-用户头像 8-认证证明材料
+          required: true
+          example: 2
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+              - 7
+              - 8
+        - name: isTemp
+          in: query
+          description: 是否临时文件（true表示上传后暂未关联业务）
+          required: false
+          schema:
+            type: boolean
+            default: true
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 文件（支持jpg/png/gif/pdf/doc/zip等，最大50MB）
+                  example: >-
+                    file:///Users/miaowu/Desktop/assests/image-20251202112301095.png
+              required:
+                - file
+        required: true
+      responses:
+        '200':
+          description: 上传成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      fileId:
+                        type: integer
+                        example: 10001
+                      fileName:
+                        type: string
+                        example: 技能证书_张三.pdf
+                      fileUrl:
+                        type: string
+                        example: https://example.com/files/2024/01/abc123.pdf
+                      fileSize:
+                        type: integer
+                        example: 1048576
+                      fileType:
+                        type: string
+                        example: application/pdf
+                      fileExtension:
+                        type: string
+                        example: pdf
+                      md5Hash:
+                        type: string
+                        example: d41d8cd98f00b204e9800998ecf8427e
+          headers: {}
+      security:
+        - token: []
+  /common/skill-tags:
+    get:
+      summary: 获取技能标签列表
+      deprecated: false
+      description: 获取系统预设的技能标签列表
+      operationId: getSkillTags
+      tags:
+        - 8. 通用接口
+        - 通用接口
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            tagId:
+                              type: integer
+                            tagName:
+                              type: string
+                            category:
+                              type: string
+                            sortOrder:
+                              type: integer
+          headers: {}
+      security: []
+  /common/file/{fileId}:
+    get:
+      summary: 获取文件信息
+      deprecated: false
+      description: 根据文件ID获取文件详细信息
+      operationId: getFileInfo
+      tags:
+        - 8. 通用接口
+      parameters:
+        - name: fileId
+          in: path
+          description: 文件ID
+          required: true
+          example: 10001
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      fileId:
+                        type: integer
+                        example: 10001
+                      fileName:
+                        type: string
+                        example: 技能证书_张三.pdf
+                      fileUrl:
+                        type: string
+                        example: https://example.com/files/10001.pdf
+                      fileSize:
+                        type: integer
+                        example: 1048576
+                      fileType:
+                        type: string
+                        example: application/pdf
+                      fileExtension:
+                        type: string
+                        example: pdf
+                      md5Hash:
+                        type: string
+                        example: d41d8cd98f00b204e9800998ecf8427e
+                      targetType:
+                        type: integer
+                        example: 2
+                      targetId:
+                        type: integer
+                        example: 101
+                      isTemp:
+                        type: boolean
+                        example: false
+                      userId:
+                        type: integer
+                        example: 10001
+                      createdTime:
+                        type: string
+                        format: date-time
+                        example: '2024-01-01T10:00:00Z'
+          headers: {}
+      security:
+        - token: []
+    delete:
+      summary: 删除文件
+      deprecated: false
+      description: 软删除文件
+      operationId: deleteFile
+      tags:
+        - 8. 通用接口
+      parameters:
+        - name: fileId
+          in: path
+          description: 文件ID
+          required: true
+          example: 10001
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: success
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 文件已删除
+          headers: {}
+      security:
+        - token: []
+  /user/notification/settings:
+    get:
+      summary: 获取通知设置
+      deprecated: false
+      description: 对应功能 UI原型“新消息通知”，获取用户的通知设置
+      operationId: getNotificationSettings
+      tags:
+        - 8. 通用接口
+        - 通用接口
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          messageNotify:
+                            type: boolean
+                            description: 新消息通知
+                            example: true
+                          projectUpdateNotify:
+                            type: boolean
+                            description: 项目状态更新通知
+                            example: true
+                          invitationNotify:
+                            type: boolean
+                            description: 组队邀请通知
+                            example: true
+                          systemNotify:
+                            type: boolean
+                            description: 系统通知
+                            example: true
+          headers: {}
+      security:
+        - token: []
+    put:
+      summary: 更新通知设置
+      deprecated: false
+      description: 更新用户的通知设置
+      operationId: updateNotificationSettings
+      tags:
+        - 8. 通用接口
+        - 通用接口
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                messageNotify:
+                  type: boolean
+                  description: 新消息通知
+                projectUpdateNotify:
+                  type: boolean
+                  description: 项目状态更新通知
+                invitationNotify:
+                  type: boolean
+                  description: 组队邀请通知
+                systemNotify:
+                  type: boolean
+                  description: 系统通知
+        required: true
+      responses:
+        '200':
+          description: 设置已保存
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                            example: 设置已保存
+          headers: {}
+      security:
+        - token: []
+  /common/upload/chunk/init:
+    post:
+      summary: 初始化分片上传
+      deprecated: false
+      description: 大文件分片上传初始化
+      operationId: initChunkUpload
+      tags:
+        - 8. 通用接口
+      parameters:
+        - name: targetType
+          in: query
+          description: 关联类型
+          required: true
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+              - 7
+              - 8
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fileName
+                - fileSize
+                - md5Hash
+              properties:
+                fileName:
+                  type: string
+                  description: 原始文件名
+                  example: 大文件_项目文档.pdf
+                fileSize:
+                  type: integer
+                  description: 文件总大小（字节）
+                  example: 10485760
+                md5Hash:
+                  type: string
+                  description: 文件MD5值
+                  example: d41d8cd98f00b204e9800998ecf8427e
+                chunkSize:
+                  type: integer
+                  description: 分片大小（字节，默认1MB）
+                  default: 1048576
+                  example: 1048576
+        required: true
+      responses:
+        '200':
+          description: 初始化成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+          headers: {}
+      security:
+        - token: []
+  /common/upload/chunk:
+    post:
+      summary: 上传分片
+      deprecated: false
+      description: 上传单个分片
+      operationId: uploadChunk
+      tags:
+        - 8. 通用接口
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                uploadId:
+                  type: string
+                  description: 上传ID（从init接口获取）
+                  example: upload_123456789
+                chunkNumber:
+                  type: integer
+                  description: 当前分片序号（从1开始）
+                  example: 1
+                file:
+                  type: string
+                  format: binary
+                  description: 分片文件内容
+                  example: ''
+              required:
+                - uploadId
+                - chunkNumber
+                - file
+        required: true
+      responses:
+        '200':
+          description: 分片上传成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+          headers: {}
+      security:
+        - token: []
+  /common/upload/merge:
+    post:
+      summary: 合并分片
+      deprecated: false
+      description: 所有分片上传完成后，合并文件
+      operationId: mergeChunks
+      tags:
+        - 8. 通用接口
+      parameters:
+        - name: Authorization
+          in: header
+          description: ''
+          required: false
+          example: Bearer {{token}}
+          schema:
+            type: string
+            default: Bearer {{token}}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - uploadId
+              properties:
+                uploadId:
+                  type: string
+                  description: 上传ID
+                  example: upload_123456789
+        required: true
+      responses:
+        '200':
+          description: 合并成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+          headers: {}
+      security:
+        - token: []
+components:
+  schemas:
+    UnauthorizedError:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 401
+        message:
+          type: string
+          example: 未授权，请先登录
+        data:
+          type: object
+          properties: {}
+          nullable: true
+    ForbiddenError:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 403
+        message:
+          type: string
+          example: 无权访问该资源
+        data:
+          type: object
+          properties: {}
+          nullable: true
+    NotFoundError:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: 请求的资源不存在
+        data:
+          type: object
+          properties: {}
+          nullable: true
+    PageRequest:
+      type: object
+      properties:
+        page:
+          type: integer
+          default: 1
+          description: 页码（从1开始）
+        size:
+          type: integer
+          default: 20
+          description: 每页条数
+        sortBy:
+          type: string
+          default: createdTime
+          description: 排序字段
+        sortDir:
+          type: string
+          default: desc
+          description: 排序方向：asc/desc
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: 状态码（200成功，400业务错误，401未认证，403禁止访问，404不存在，500系统错误）
+          example: 200
+        message:
+          type: string
+          description: 提示信息
+          example: success
+        data:
+          type: object
+          description: 业务数据
+          properties: {}
+          nullable: true
+          example: {}
+    StompSendMessageRequest:
+      type: object
+      description: 通过 STOMP 发送聊天消息的请求体
+      required:
+        - senderId
+        - sessionId
+        - receiverId
+        - content
+        - msgType
+      properties:
+        senderId:
+          type: integer
+          format: int32
+          description: 发送方用户ID
+          example: 10001
+        sessionId:
+          type: integer
+          format: int32
+          description: 会话ID
+          example: 501
+        receiverId:
+          type: integer
+          format: int32
+          description: 接收方用户ID（会话的另一个参与者）
+          example: 10002
+        content:
+          type: string
+          description: 消息内容
+          example: 你好，我对你的项目很感兴趣
+        msgType:
+          type: integer
+          format: int32
+          description: 消息类型：1-文字 2-图片 3-系统通知 4-投递卡片 5-邀请卡片
+          example: 1
+    StandardResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: 状态码：200-成功 400-参数错误 401-未授权 403-禁止访问 404-资源不存在 500-服务器错误
+          example: 200
+        message:
+          type: string
+          description: 提示信息
+          example: success
+        timestamp:
+          type: integer
+          description: 时间戳
+          example: 1625097600000
+    UserProfile:
+      type: object
+      properties:
+        userId:
+          type: integer
+          description: 用户ID
+        studentId:
+          type: string
+          description: 学号
+        username:
+          type: string
+          description: 真实姓名
+        nickname:
+          type: string
+          description: 用户昵称
+        avatarFile:
+          type: object
+          description: 头像文件信息
+          properties:
+            fileId:
+              type: integer
+            fileName:
+              type: string
+            fileUrl:
+              type: string
+            fileSize:
+              type: integer
+        gender:
+          type: integer
+          description: 0-未知 1-男 2-女
+          enum:
+            - 0
+            - 1
+            - 2
+        birthday:
+          type: string
+          format: date
+          description: 出生日期
+        major:
+          type: string
+          description: 专业
+        grade:
+          type: string
+          description: 年级
+        email:
+          type: string
+          description: 邮箱
+        phone:
+          type: string
+          description: 手机号
+        techStack:
+          type: string
+          description: 技术栈
+        personalIntro:
+          type: string
+          description: 个人简介
+        awardExperience:
+          type: string
+          description: 获奖经历
+        authStatus:
+          type: integer
+          description: 认证状态：0-待审核 1-已通过 2-未认证
+          enum:
+            - 0
+            - 1
+            - 2
+        isTalentVisible:
+          type: boolean
+          description: 人才卡片是否可见
+        createdTime:
+          type: string
+          format: date-time
+          description: 注册时间
+    ChatMessageResponse:
+      type: object
+      description: 通过 /topic/chat/{sessionId} 推送的单条消息结构
+      properties:
+        messageId:
+          type: integer
+          format: int64
+          description: 消息ID
+          example: 801
+        senderId:
+          type: integer
+          format: int32
+          description: 发送方ID
+          example: 10001
+        senderNickname:
+          type: string
+          description: 发送方昵称
+          example: 张三
+        senderAvatar:
+          type: string
+          description: 发送方头像（文件ID或URL），可能为 null
+          nullable: true
+          example: '12345'
+        content:
+          type: string
+          description: 消息内容
+          example: 你好
+        msgType:
+          type: integer
+          format: int32
+          description: 消息类型：1-文字 2-图片 3-系统通知 4-投递卡片 5-邀请卡片
+          example: 1
+        status:
+          type: integer
+          format: int32
+          description: 消息状态：0-未读 1-已读 2-撤回
+          example: 0
+        sendTime:
+          type: string
+          format: date-time
+          description: 发送时间（UTC）
+          example: '2026-03-13T14:15:22.123Z'
+    ProjectListItem:
+      type: object
+      properties:
+        projectId:
+          type: integer
+          description: 项目ID
+        name:
+          type: string
+          description: 项目名称
+        belongTrack:
+          type: string
+          description: 所属赛道
+        projectIntro:
+          type: string
+          description: 项目简介（截取）
+        publisherInfo:
+          type: object
+          properties:
+            nickname:
+              type: string
+              description: 发布人昵称
+            avatar:
+              type: string
+              description: 发布人头像
+        deadlineRecruit:
+          type: string
+          format: date-time
+          description: 招募截止时间
+        status:
+          type: integer
+          description: 项目状态：0-草拟 1-实施 2-招募中 3-完成 4-终止
+        viewCount:
+          type: integer
+          description: 浏览次数
+        favoriteCount:
+          type: integer
+          description: 收藏次数
+        roleSummaries:
+          type: array
+          items:
+            type: object
+            properties:
+              role:
+                type: string
+                description: 角色名
+              memberQuota:
+                type: integer
+                description: 招募人数
+              currentMembers:
+                type: integer
+                description: 已有人数
+    FileInfo:
+      type: object
+      properties:
+        fileId:
+          type: integer
+        fileName:
+          type: string
+        fileUrl:
+          type: string
+        fileSize:
+          type: integer
+        fileType:
+          type: string
+        fileExtension:
+          type: string
+        md5Hash:
+          type: string
+        targetType:
+          type: integer
+        targetId:
+          type: integer
+        isTemp:
+          type: boolean
+        createdTime:
+          type: string
+          format: date-time
+    TalentCardItem:
+      type: object
+      properties:
+        cardId:
+          type: integer
+          description: 卡片ID
+        userId:
+          type: integer
+          description: 用户ID
+        displayName:
+          type: string
+          description: 展示姓名
+        avatar:
+          type: string
+          description: 用户头像
+        major:
+          type: string
+          description: 专业
+        grade:
+          type: string
+          description: 年级
+        cardTitle:
+          type: string
+          description: 卡片标题
+        skillTags:
+          type: string
+          description: 技能标签
+        targetDirection:
+          type: string
+          description: 期望方向
+        expectedCompetition:
+          type: string
+          description: 期望参赛
+        lastVisibleTime:
+          type: string
+          format: date-time
+          description: 最后活跃时间
+    SkillCertification:
+      type: object
+      properties:
+        certId:
+          type: integer
+        skillName:
+          type: string
+        certName:
+          type: string
+        certFile:
+          $ref: '#/components/schemas/FileInfo'
+        issueDate:
+          type: string
+          format: date
+        issuer:
+          type: string
+        certNumber:
+          type: string
+        description:
+          type: string
+        auditStatus:
+          type: integer
+          enum:
+            - 0
+            - 1
+            - 2
+        auditTime:
+          type: string
+          format: date-time
+        createdTime:
+          type: string
+          format: date-time
+    ChatSessionItem:
+      type: object
+      properties:
+        sessionId:
+          type: integer
+          description: 会话ID
+        targetUser:
+          type: object
+          description: 对方用户信息
+          properties:
+            userId:
+              type: integer
+            nickname:
+              type: string
+            avatar:
+              type: string
+        lastMessage:
+          type: string
+          description: 最后一条消息内容
+        lastMsgTime:
+          type: string
+          format: date-time
+          description: 最后消息时间
+        unreadCount:
+          type: integer
+          description: 当前用户未读数
+        recruitStatus:
+          type: string
+          description: 沟通状态（可选，用于状态流转）
+        projectId:
+          type: integer
+          description: 关联项目ID
+        projectName:
+          type: string
+          description: 关联项目名称
+    TalentCard:
+      type: object
+      properties:
+        cardId:
+          type: integer
+        status:
+          type: integer
+        isVisible:
+          type: boolean
+        cardTitle:
+          type: string
+        targetDirection:
+          type: string
+        expectedCompetition:
+          type: string
+        expectedRole:
+          type: string
+        selfStatement:
+          type: string
+        skillTags:
+          type: string
+        resumeFile:
+          $ref: '#/components/schemas/FileInfo'
+        portfolioFile:
+          $ref: '#/components/schemas/FileInfo'
+        githubUrl:
+          type: string
+        viewCount:
+          type: integer
+        inviteCount:
+          type: integer
+        updateTime:
+          type: string
+          format: date-time
+    MessageItem:
+      type: object
+      properties:
+        messageId:
+          type: integer
+          description: 消息ID
+        senderId:
+          type: integer
+          description: 发送方ID
+        senderNickname:
+          type: string
+          description: 发送方昵称
+        senderAvatar:
+          type: string
+          description: 发送方头像
+        content:
+          type: string
+          description: 消息内容
+        msgType:
+          type: integer
+          description: 类型：1-文字 2-图片 3-系统通知 4-投递卡片 5-邀请卡片
+          enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+        status:
+          type: integer
+          description: 0-未读 1-已读 2-撤回
+          enum:
+            - 0
+            - 1
+            - 2
+        sendTime:
+          type: string
+          format: date-time
+          description: 发送时间
+    CommunityPostDetailItem:
+      type: object
+      properties:
+        postId:
+          type: integer
+          description: 帖子ID
+        section:
+          type: integer
+          description: 板块：1-技术交流 2-灵感分享 3-组队经验
+          enum:
+            - 1
+            - 2
+            - 3
+        title:
+          type: string
+          description: 标题
+        content:
+          type: string
+          description: 帖子全文内容
+        images:
+          type: array
+          items:
+            type: string
+          description: 图片列表
+        userInfo:
+          type: object
+          properties:
+            userId:
+              type: integer
+            nickname:
+              type: string
+            avatar:
+              type: string
+        viewCount:
+          type: integer
+          description: 浏览次数
+        likeCount:
+          type: integer
+          description: 点赞数
+        commentCount:
+          type: integer
+          description: 评论数
+        isTop:
+          type: boolean
+          description: 是否置顶
+        isEssence:
+          type: boolean
+          description: 是否精华
+        status:
+          type: integer
+          description: 状态：1-正常 0-删除 2-违规下架
+        createdTime:
+          type: string
+          format: date-time
+          description: 发布时间
+        updateTime:
+          type: string
+          format: date-time
+          description: 更新时间
+    CommunityPostItem:
+      type: object
+      properties:
+        postId:
+          type: integer
+          description: 帖子ID
+        section:
+          type: integer
+          description: 板块：1-技术交流 2-灵感分享 3-组队经验
+          enum:
+            - 1
+            - 2
+            - 3
+        title:
+          type: string
+          description: 标题
+        content:
+          type: string
+          description: 内容摘要
+        userInfo:
+          type: object
+          properties:
+            userId:
+              type: integer
+            nickname:
+              type: string
+            avatar:
+              type: string
+        viewCount:
+          type: integer
+          description: 浏览次数
+        likeCount:
+          type: integer
+          description: 点赞数
+        commentCount:
+          type: integer
+          description: 评论数
+        isTop:
+          type: boolean
+          description: 是否置顶
+        isEssence:
+          type: boolean
+          description: 是否精华
+        createdTime:
+          type: string
+          format: date-time
+          description: 发布时间
+    CommunityCommentItem:
+      type: object
+      properties:
+        commentId:
+          type: integer
+          description: 评论ID
+        content:
+          type: string
+          description: 评论内容
+        likeCount:
+          type: integer
+          description: 点赞数
+        status:
+          type: integer
+          description: 状态：1-正常 0-删除
+        userInfo:
+          type: object
+          properties:
+            userId:
+              type: integer
+              description: 用户ID
+            nickname:
+              type: string
+              description: 用户昵称
+            avatar:
+              type: string
+              description: 用户头像
+        createdTime:
+          type: string
+          format: date-time
+          description: 评论时间
+        updateTime:
+          type: string
+          format: date-time
+          description: 更新时间
+        replies:
+          type: array
+          description: 楼中楼子评论列表（递归结构）
+          items:
+            $ref: '#/components/schemas/CommunityCommentItem'
+  responses: {}
+  securitySchemes:
+    token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 使用 JWT 进行身份验证。在需要认证的接口中，需在请求头携带 Token。
+servers: []
+security: []
