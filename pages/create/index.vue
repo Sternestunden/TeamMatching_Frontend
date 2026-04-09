@@ -31,18 +31,18 @@
       <view v-if="currentStep === 1">
         <FormCard title="项目基本信息">
           <view class="form-item">
-            <text class="label">项目名称</text>
+            <text class="label">项目名称<text class="req">*</text></text>
             <input v-model="form.name" placeholder="请输入项目名称" class="input" />
           </view>
           <view class="form-item">
-            <text class="label">项目描述</text>
+            <text class="label">项目描述<text class="req">*</text></text>
             <textarea v-model="form.desc" placeholder="请输入项目描述" class="textarea" />
           </view>
         </FormCard>
 
         <FormCard title="项目类型与状态">
           <view class="form-item">
-            <text class="label">竞赛类别</text>
+            <text class="label">竞赛类别<text class="req">*</text></text>
             <view class="select" @click="selectCategory">
               {{ form.category || '请选择' }}
             </view>
@@ -63,11 +63,11 @@
           <!-- 一组 = 角色名称 + 招募数量 放在一起 -->
           <view class="role-group" v-for="(item, idx) in form.roles" :key="idx">
             <view class="form-item">
-              <text class="label">角色名称 {{ idx + 1 }}</text>
+              <text class="label">角色名称 {{ idx + 1 }}<text class="req">*</text></text>
               <input v-model="item.name" placeholder="如：前端、后端、设计" class="input" />
             </view>
             <view class="form-item">
-              <text class="label">招募数量</text>
+              <text class="label">招募数量<text class="req">*</text></text>
               <input v-model="item.count" placeholder="请输入数字" class="input" />
             </view>
           </view>
@@ -78,13 +78,15 @@
       <view v-if="currentStep === 2">
         <FormCard title="招募设置">
           <view class="form-item">
-            <text class="label">截止日期</text>
-            <input 
-              type="date" 
-              class="input" 
-              v-model="form.deadline"
-              style="height:80rpx;padding:0 20rpx;"
-            />
+            <text class="label">截止时间<text class="req">*</text></text>
+            <view class="deadline-pickers">
+              <picker mode="date" :value="form.deadlineDate" @change="onDeadlineDateChange">
+                <view class="picker-value">{{ form.deadlineDate || '选择日期' }}</view>
+              </picker>
+              <picker mode="time" :value="form.deadlineTime" @change="onDeadlineTimeChange">
+                <view class="picker-value">{{ form.deadlineTime || '选择时间' }}</view>
+              </picker>
+            </view>
           </view>
           <view class="form-item switch-row">
             <text class="label">允许跨专业申请</text>
@@ -115,7 +117,7 @@
           </view>
           <view class="recruit-section">
             <view class="recruit-title">招募信息</view>
-            <view class="recruit-deadline">⏰ 截止日期：{{ form.deadline || '2025-1-23' }}</view>
+            <view class="recruit-deadline">⏰ 截止时间：{{ deadlinePreview || '2025-01-23 23:59' }}</view>
             <view class="role-list">
               <view class="role-item" v-for="(item, idx) in form.roles" :key="idx">
                 <view class="role-header">
@@ -158,7 +160,9 @@ export default {
         desc: '',
         category: '',
         status: '',
-        deadline: '',
+        // 截止时间（到分钟）
+        deadlineDate: '',
+        deadlineTime: '23:59',
         allowCrossMajor: false,
         roles: [{ name: '', count: '', requirement: '' }]
       },
@@ -168,11 +172,25 @@ export default {
     }
   },
 
+  computed: {
+    deadlinePreview() {
+      if (!this.form.deadlineDate || !this.form.deadlineTime) return ''
+      return `${this.form.deadlineDate} ${this.form.deadlineTime}`
+    }
+  },
+
   onShow() {
     uni.$off('loadDraft')
     uni.$on('loadDraft', (draft) => {
       this.editingDraftId = draft.id // 记录正在编辑的草稿ID
       this.form = JSON.parse(JSON.stringify(draft.form))
+      // 兼容旧草稿字段
+      if (this.form.deadline && !this.form.deadlineDate) {
+        this.form.deadlineDate = String(this.form.deadline).slice(0, 10)
+      }
+      if (!this.form.deadlineTime) {
+        this.form.deadlineTime = '23:59'
+      }
       this.currentStep = draft.currentStep
       this.stepStatus = draft.stepStatus
       uni.showToast({ title: '已加载草稿', icon: 'success' })
@@ -180,6 +198,60 @@ export default {
   },
 
   methods: {
+    validateStep(step) {
+      if (step === 1) {
+        const name = this.form.name?.trim()
+        const desc = this.form.desc?.trim()
+        const category = this.form.category?.trim()
+        if (!name) return { ok: false, msg: '请填写项目名称' }
+        if (!desc) return { ok: false, msg: '请填写项目描述' }
+        if (!category) return { ok: false, msg: '请选择竞赛类别' }
+        if (!Array.isArray(this.form.roles) || this.form.roles.length === 0) {
+          return { ok: false, msg: '请至少添加一个角色需求' }
+        }
+        for (let i = 0; i < this.form.roles.length; i++) {
+          const r = this.form.roles[i] || {}
+          const roleName = String(r.name || '').trim()
+          const count = String(r.count || '').trim()
+          if (!roleName) return { ok: false, msg: `请填写角色名称 ${i + 1}` }
+          if (!count) return { ok: false, msg: `请填写角色 ${i + 1} 的招募数量` }
+          const n = Number(count)
+          if (!Number.isFinite(n) || n <= 0 || !Number.isInteger(n)) {
+            return { ok: false, msg: `角色 ${i + 1} 的招募数量需为正整数` }
+          }
+        }
+        return { ok: true }
+      }
+
+      if (step === 2) {
+        const deadline = this.buildDeadlineRecruit()
+        if (!deadline) return { ok: false, msg: '请选择截止时间' }
+        return { ok: true }
+      }
+
+      if (step === 3) {
+        const v1 = this.validateStep(1)
+        if (!v1.ok) return v1
+        const v2 = this.validateStep(2)
+        if (!v2.ok) return v2
+        return { ok: true }
+      }
+
+      return { ok: true }
+    },
+    onDeadlineDateChange(e) {
+      this.form.deadlineDate = e.detail.value
+    },
+    onDeadlineTimeChange(e) {
+      this.form.deadlineTime = e.detail.value
+    },
+    buildDeadlineRecruit() {
+      const d = this.form.deadlineDate
+      const t = this.form.deadlineTime
+      if (!d || !t) return ''
+      // 后端字段是 LocalDateTime，需要 YYYY-MM-DDTHH:mm:ss
+      return `${d}T${t}:00`
+    },
     goStep(step) {
       if (this.stepStatus[step] || step <= this.currentStep) {
         this.currentStep = step
@@ -258,6 +330,11 @@ export default {
 
     nextStep() {
       if (this.currentStep < 3) {
+        const v = this.validateStep(this.currentStep)
+        if (!v.ok) {
+          uni.showToast({ title: v.msg, icon: 'none' })
+          return
+        }
         this.stepStatus[this.currentStep] = true
         this.currentStep++
 		this.scrollTop = 0
@@ -270,6 +347,11 @@ export default {
     // ✅ 发布项目 → 自动删除草稿
     // ======================
     async submitProject() {
+      const v = this.validateStep(3)
+      if (!v.ok) {
+        uni.showToast({ title: v.msg, icon: 'none' })
+        return
+      }
       const params = {
         name: this.form.name,
         belongTrack: this.form.category,
@@ -281,13 +363,18 @@ export default {
         allowCrossMajor: this.form.allowCrossMajor,
         isAnonymous: false,
         contactInfo: "",
-        deadlineRecruit: this.form.deadline,
+        deadlineRecruit: this.buildDeadlineRecruit(),
         status: 0,
         roleRequirements: this.form.roles.map(item => ({
           role: item.name,
           memberQuota: item.count,
           recruitRequirements: item.requirement
         }))
+      }
+
+      if (!params.deadlineRecruit) {
+        uni.showToast({ title: '请选择截止时间', icon: 'none' })
+        return
       }
 
       try {
@@ -312,7 +399,8 @@ export default {
           this.currentStep = 1
           this.stepStatus = { 1: false, 2: false, 3: false }
           this.form = {
-            name: "", desc: "", category: "", status: "", deadline: "",
+              name: "", desc: "", category: "", status: "",
+              deadlineDate: "", deadlineTime: "23:59",
             allowCrossMajor: false, roles: [{ name: "", count: "", requirement: "" }]
           }
           uni.switchTab({ url: '/pages/square/index' })
@@ -407,6 +495,26 @@ export default {
 	outline: none;
 }
 
+.deadline-pickers {
+  display: flex;
+  gap: 12px;
+}
+
+.picker-value {
+  height: 40px;
+  line-height: 40px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+}
+
+.req {
+  color: #ff4d4f;
+  margin-left: 4px;
+}
 /* 开关样式 */
 .switch-row {
   display: flex;
