@@ -100,6 +100,15 @@
 		      }
 		    },
 		    {
+		      "path": "pages/user/info",
+		      "style": {
+		        "navigationBarTitleText": "个人信息",
+		        "navigationBarBackgroundColor": "#ffffff",
+		        "navigationBarTextStyle": "black",
+		        "backgroundColor": "#f5f7fb"
+		      }
+		    },
+		    {
 		      "path": "pages/user/auth",
 		      "style": {
 		        "navigationBarTitleText": "身份认证",

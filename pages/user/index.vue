@@ -56,6 +56,22 @@
     <!-- 系统设置 / 反馈建议 -->
     <view class="card section-card">
       <view class="section-list">
+        <view class="list-item" @tap="goUserInfo">
+          <view class="item-left">
+            <view class="item-icon-circle item-icon-doc"></view>
+            <text class="item-text">个人信息</text>
+          </view>
+          <text class="item-arrow">›</text>
+        </view>
+        <view class="divider"></view>
+        <view class="list-item" @tap="goAuth">
+          <view class="item-left">
+            <view class="item-icon-circle item-icon-lock"></view>
+            <text class="item-text">身份认证</text>
+          </view>
+          <text class="item-arrow">›</text>
+        </view>
+        <view class="divider"></view>
         <view class="list-item" @tap="goSettings">
           <view class="item-left">
             <view class="item-icon-circle item-icon-gear"></view>
@@ -70,30 +86,6 @@
             <text class="item-text">反馈建议</text>
           </view>
           <text class="item-arrow">›</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 身份认证信息弹窗 -->
-    <view v-if="showAuthInfo" class="modal-mask" @tap="closeAuthInfo">
-      <view class="modal-container" @tap.stop>
-        <view class="modal-header">
-          <text class="modal-title">个人信息</text>
-          <text class="modal-close" @tap="closeAuthInfo">✕</text>
-        </view>
-        <view class="modal-body">
-          <view class="modal-row">
-            <text class="modal-label">姓名：</text>
-            <text class="modal-value">{{ authInfo.name }}</text>
-          </view>
-          <view class="modal-row">
-            <text class="modal-label">学号：</text>
-            <text class="modal-value">{{ authInfo.studentId }}</text>
-          </view>
-          <view class="modal-row">
-            <text class="modal-label">校园邮箱：</text>
-            <text class="modal-value">{{ authInfo.campusEmail }}</text>
-          </view>
         </view>
       </view>
     </view>
@@ -152,17 +144,11 @@ export default {
         grade: '25级',
         college: '软件工程学院'
       },
-      authInfo: {
-        name: '张伟',
-        studentId: '102XXXXXXX',
-        campusEmail: 'xxx@stu.ecnu.cn'
-      },
       skills: [
             { name: 'Python', exp: '做过数据分析项目' },
             { name: 'Vue.js', exp: '开发过校园小程序' },
             { name: 'Rust', exp: '学习操作系统' }
           ],
-      showAuthInfo: false,
       showSkillModal: false,
       skillForm: {
         stack: '',
@@ -197,11 +183,15 @@ export default {
         url: '/pages/user/profile'
       })
     },
-    openAuthInfo() {
-      this.showAuthInfo = true
+    goUserInfo() {
+      uni.navigateTo({ url: '/pages/user/info' })
     },
-    closeAuthInfo() {
-      this.showAuthInfo = false
+    goAuth() {
+      uni.navigateTo({ url: '/pages/user/auth' })
+    },
+    openAuthInfo() {
+      // 顶部卡片的认证状态按钮点击，也跳转到认证页
+      this.goAuth()
     },
     openSkillModal() {
       this.skillForm.stack = ''

@@ -52,7 +52,7 @@ export default (vm) => {
 		const data = response.data || {}
 
 		if (response.statusCode !== 200) {
-			uni.$u.toast('接口请求失败'); // 新文件的提示文案
+			uni.$u.toast(data?.message || '接口请求失败'); // 尽量透传后端message
 			return Promise.reject(response);
 		}
 		//自定义参数

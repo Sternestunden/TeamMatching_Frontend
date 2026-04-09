@@ -10,7 +10,7 @@
         </view>
         <view class="item divider" @click="handleCampusAuth">
           <text class="item-label">校园身份认证</text>
-          <view class="item-badge">ECNU已认证</view>
+          <view class="item-badge">已认证</view>
         </view>
       </view>
     </view>
