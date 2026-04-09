@@ -24,6 +24,11 @@ const projectMockList = [
   }
 ];
 
+function nextProjectId() {
+  const maxId = projectMockList.reduce((m, x) => Math.max(m, Number(x.projectId) || 0), 0)
+  return maxId + 1
+}
+
 // 登录模拟
 function login(params) {
   return new Promise((resolve) => {
@@ -33,6 +38,45 @@ function login(params) {
       data: { token: "mock-token-123456" }
     });
   });
+}
+
+// 注册模拟
+function register(params) {
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      message: "注册成功",
+      data: { userId: 10001, token: "mock-token-registered", expiresIn: 7200, authStatus: 2 }
+    })
+  })
+}
+
+// 发送验证码模拟
+function sendCode(params) {
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      message: "success",
+      data: { message: "验证码发送成功", expireIn: 300 }
+    })
+  })
+}
+
+// 微信一键登录模拟
+function wxLogin(params) {
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      message: "success",
+      data: {
+        userId: 10001,
+        token: "mock-token-wx",
+        expiresIn: 7200,
+        isNewUser: false,
+        authStatus: 2
+      }
+    })
+  })
 }
 
 // 用户信息模拟
@@ -47,6 +91,33 @@ function getUserProfile() {
       }
     });
   });
+}
+
+// 创建项目模拟
+function createProject(params) {
+  const now = new Date()
+  const iso = now.toISOString().slice(0, 10)
+  const item = {
+    projectId: nextProjectId(),
+    name: params?.name || "未命名项目",
+    belongTrack: params?.belongTrack || "其他",
+    projectIntro: params?.projectIntro || "",
+    tags: params?.tags || "",
+    publisherInfo: { nickname: "测试用户" },
+    status: typeof params?.status === "number" ? params.status : 0,
+    deadlineRecruit: params?.deadlineRecruit || iso,
+    releaseTime: iso
+  }
+
+  projectMockList.unshift(item)
+
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      message: "创建成功",
+      data: item
+    })
+  })
 }
 
 // 项目列表模拟
@@ -72,7 +143,11 @@ function getProjectDetail(projectId) {
 
 export default {
   login,
+  register,
+  sendCode,
+  wxLogin,
   getUserProfile,
+  createProject,
   getProjectList,
   getProjectDetail,
   projectMockList

@@ -144,6 +144,7 @@
 
 <script>
 import FormCard from '@/components/FormCard.vue'
+import api from '@/common/api/index.js'
 
 export default {
   components: { FormCard },
@@ -289,37 +290,37 @@ export default {
         }))
       }
 
-      uni.request({
-        url: "http://127.0.0.1:4523/m1/7867336-7617022-default/project",
-        method: "POST",
-        data: params,
-        success: (res) => {
-          uni.showToast({ title: "发布成功", icon: "success" })
+      try {
+        const res = await api.createProject(params)
+        uni.showToast({ title: "发布成功", icon: "success" })
 
-          // ======================
-          // ✅ 发布成功 → 删除草稿
-          // ======================
-          if (this.editingDraftId) {
-            let drafts = uni.getStorageSync('projectDrafts') || []
-            drafts = drafts.filter(d => d.id !== this.editingDraftId)
-            uni.setStorageSync('projectDrafts', drafts)
-            this.editingDraftId = null
-          }
+        // 通知项目大厅刷新（兼容不立刻回大厅的情况）
+        uni.$emit('project:created', res?.data || null)
 
-          // 重置表单
-          setTimeout(() => {
-            this.currentStep = 1
-            this.stepStatus = { 1: false, 2: false, 3: false }
-            this.form = {
-              name: "", desc: "", category: "", status: "", deadline: "",
-              allowCrossMajor: false, roles: [{ name: "", count: "", requirement: "" }]
-            }
-          }, 1500)
-        },
-        fail: (err) => {
-          uni.showToast({ title: "发布失败", icon: "error" })
+        // ======================
+        // ✅ 发布成功 → 删除草稿
+        // ======================
+        if (this.editingDraftId) {
+          let drafts = uni.getStorageSync('projectDrafts') || []
+          drafts = drafts.filter(d => d.id !== this.editingDraftId)
+          uni.setStorageSync('projectDrafts', drafts)
+          this.editingDraftId = null
         }
-      })
+
+        // 重置表单并回到大厅
+        setTimeout(() => {
+          this.currentStep = 1
+          this.stepStatus = { 1: false, 2: false, 3: false }
+          this.form = {
+            name: "", desc: "", category: "", status: "", deadline: "",
+            allowCrossMajor: false, roles: [{ name: "", count: "", requirement: "" }]
+          }
+          uni.switchTab({ url: '/pages/square/index' })
+        }, 800)
+      } catch (err) {
+        console.error("发布失败：", err)
+        uni.showToast({ title: "发布失败", icon: "error" })
+      }
     },
   }
 }
