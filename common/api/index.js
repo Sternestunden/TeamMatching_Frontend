@@ -49,6 +49,78 @@ const api = {
     })
   },
 
+  // 更新用户信息
+  updateUserProfile(params) {
+    if (config.useMock) {
+      console.log('🔧 Mock更新用户信息', params)
+      return mockApi.updateUserProfile(params)
+    }
+    return uni.$u.http.put('/user/profile', params, {
+      custom: { auth: true }
+    })
+  },
+
+  // 查询认证状态
+  getAuthStatus() {
+    if (config.useMock) {
+      console.log('🔧 Mock认证状态')
+      return mockApi.getAuthStatus()
+    }
+    return uni.$u.http.get('/auth/status', {
+      custom: { auth: true }
+    })
+  },
+
+  // 学生邮箱认证（无需上传材料）
+  verifyByEmail(params) {
+    if (config.useMock) {
+      console.log('🔧 Mock学生邮箱认证', params)
+      return mockApi.verifyByEmail(params)
+    }
+    return uni.$u.http.post('/auth/verify-email', params, {
+      custom: { auth: true }
+    })
+  },
+
+  // 提交身份认证（上传材料后）
+  submitAuth(params) {
+    if (config.useMock) {
+      console.log('🔧 Mock提交身份认证', params)
+      return mockApi.submitAuth(params)
+    }
+    return uni.$u.http.post('/auth/verify', params, {
+      custom: { auth: true }
+    })
+  },
+
+  // 通用文件上传（用于认证材料 targetType=8）
+  uploadFile({ filePath, targetType, isTemp = true }) {
+    if (config.useMock) {
+      console.log('🔧 Mock上传文件', { filePath, targetType, isTemp })
+      return mockApi.uploadFile({ filePath, targetType, isTemp })
+    }
+    // 由于是 multipart/form-data，使用 uni.uploadFile 更稳
+    const token = uni.getStorageSync('access-token') || ''
+    return new Promise((resolve, reject) => {
+      uni.uploadFile({
+        url: `${config.baseUrl}/common/upload/file?targetType=${encodeURIComponent(targetType)}&isTemp=${encodeURIComponent(isTemp)}`,
+        filePath,
+        name: 'file',
+        header: token ? { Authorization: `Bearer ${token}` } : {},
+        success: (res) => {
+          try {
+            const data = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
+            if (data?.code === 200) resolve(data)
+            else reject(data || res)
+          } catch (e) {
+            reject(e)
+          }
+        },
+        fail: reject
+      })
+    })
+  },
+
   // ==================== 项目相关 ====================
   // 创建项目
   createProject(params) {
@@ -73,6 +145,18 @@ const api = {
     })
   },
 
+  // 获取我发布的项目列表（我发起的项目）
+  getMyPublishedProjects(params) {
+    if (config.useMock) {
+      console.log('🔧 Mock我发布的项目列表', params)
+      return mockApi.getMyPublishedProjects(params)
+    }
+    return uni.$u.http.get('/project/my-published', {
+      params: params,
+      custom: { auth: true }
+    })
+  },
+
   // 获取项目详情
   getProjectDetail(projectId) {
     if (config.useMock) {
@@ -81,7 +165,19 @@ const api = {
     return uni.$u.http.get(`/project/${projectId}`, {
       custom: { auth: true }
     })
-  }
+  },
+
+  // ==================== 团队相关 ====================
+  // 获取“我加入的项目”等（UI原型：我加入的项目）
+  getMyTeams() {
+    if (config.useMock) {
+      console.log('🔧 Mock我的团队')
+      return mockApi.getMyTeams()
+    }
+    return uni.$u.http.get('/team/my', {
+      custom: { auth: true }
+    })
+  },
 }
 
 export default api

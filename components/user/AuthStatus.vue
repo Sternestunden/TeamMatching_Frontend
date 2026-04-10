@@ -1,6 +1,6 @@
 <template>
     <view class="auth-badge" @tap="$emit('tap')">
-      <text class="auth-badge-text">ECNU已认证</text>
+      <text class="auth-badge-text">已认证</text>
     </view>
   </template>
   

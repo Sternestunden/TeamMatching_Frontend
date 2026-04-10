@@ -40,19 +40,15 @@
 </template>
 
 <script>
+import api from '@/common/api/index.js'
+
 export default {
   data() {
     return {
       type: 'launched',
-      launchedList: [
-        { title: '基于AI的校园组队平台' },
-        { title: '何意味' }
-      ],
-      joinedList: [
-        { title: '基于校园的AI组队平台', status: 'pending', statusText: '申请中' },
-        { title: '项目二', status: 'passed', statusText: '已通过' },
-        { title: '项目三', status: 'rejected', statusText: '被拒' }
-      ],
+      loading: false,
+      launchedList: [],
+      joinedList: [],
       draftedList: [],
       isNavigating: false
     }
@@ -64,6 +60,12 @@ export default {
     }
     this.updateTitle()
     this.loadDraftList()
+    this.fetchByType()
+  },
+
+  onShow() {
+    // 从其他页面返回时（例如发布项目后），刷新当前列表
+    this.fetchByType()
   },
 
   methods: {
@@ -73,6 +75,93 @@ export default {
       else if (this.type === 'joined') title = '我加入的项目'
       else if (this.type === 'draft') title = '草稿箱'
       uni.setNavigationBarTitle({ title })
+    },
+
+    async fetchByType() {
+      if (this.type === 'draft') {
+        this.loadDraftList()
+        return
+      }
+
+      const token = uni.getStorageSync('access-token')
+      if (!token) {
+        uni.showToast({ title: '请先登录', icon: 'none' })
+        setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 300)
+        return
+      }
+
+      if (this.type === 'launched') return this.fetchLaunched()
+      if (this.type === 'joined') return this.fetchJoined()
+    },
+
+    async fetchLaunched() {
+      this.loading = true
+      try {
+        const res = await api.getMyPublishedProjects({ page: 1, size: 20 })
+        const list = Array.isArray(res?.data) ? res.data : []
+        this.launchedList = list.map(item => ({
+          projectId: item.projectId,
+          title: item.name,
+          status: item.status,
+          auditStatus: item.auditStatus,
+          releaseTime: item.releaseTime,
+          viewCount: item.viewCount,
+          applyCount: item.applyCount,
+          totalRoles: item.totalRoles,
+          filledRoles: item.filledRoles
+        }))
+      } catch (err) {
+        console.error('获取我发起的项目失败：', err)
+        uni.showToast({ title: '获取失败', icon: 'none' })
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async fetchJoined() {
+      this.loading = true
+      try {
+        const res = await api.getMyTeams()
+        const data = res?.data || {}
+
+        const joined = Array.isArray(data.joined) ? data.joined.map(x => ({
+          projectId: x.projectId,
+          title: x.name,
+          status: 'passed',
+          statusText: '已加入',
+          belongTrack: x.belongTrack,
+          role: x.role,
+          projectLeader: x.projectLeader
+        })) : []
+
+        const applying = Array.isArray(data.applying) ? data.applying.map(x => ({
+          projectId: x.projectId,
+          title: x.name,
+          status: 'pending',
+          statusText: '申请中'
+        })) : []
+
+        const invited = Array.isArray(data.invited) ? data.invited.map(x => ({
+          projectId: x.projectId,
+          title: x.name,
+          status: 'pending',
+          statusText: '被邀请'
+        })) : []
+
+        const rejected = Array.isArray(data.rejected) ? data.rejected.map(x => ({
+          projectId: x.projectId,
+          title: x.name,
+          status: 'rejected',
+          statusText: '已退出/被拒'
+        })) : []
+
+        this.joinedList = [...applying, ...invited, ...joined, ...rejected]
+      } catch (err) {
+        console.error('获取我加入的项目失败：', err)
+        uni.showToast({ title: '获取失败', icon: 'none' })
+      } finally {
+        this.loading = false
+      }
     },
 
     loadDraftList() {

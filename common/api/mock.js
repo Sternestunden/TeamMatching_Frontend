@@ -93,6 +93,68 @@ function getUserProfile() {
   });
 }
 
+function getAuthStatus() {
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      message: "success",
+      data: {
+        authStatus: 2,
+        auditTime: null,
+        remark: ""
+      }
+    })
+  })
+}
+
+function verifyByEmail(params) {
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      message: "success",
+      data: { authId: 10001, message: "学生邮箱认证成功", authStatus: 1 }
+    })
+  })
+}
+
+function submitAuth(params) {
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      message: "success",
+      data: { authId: 10001, message: "认证申请提交成功，等待审核", authStatus: 0 }
+    })
+  })
+}
+
+function uploadFile(params) {
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      message: "success",
+      data: {
+        fileId: 10001,
+        fileName: "mock_upload.jpg",
+        fileUrl: "https://example.com/files/mock_upload.jpg",
+        fileSize: 1,
+        fileType: "image/jpeg",
+        fileExtension: "jpg",
+        md5Hash: "d41d8cd98f00b204e9800998ecf8427e"
+      }
+    })
+  })
+}
+
+function updateUserProfile(params) {
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      message: "success",
+      data: { message: "更新成功" }
+    })
+  })
+}
+
 // 创建项目模拟
 function createProject(params) {
   const now = new Date()
@@ -130,6 +192,53 @@ function getProjectList(params) {
   });
 }
 
+// 我发起的项目（简单用现有列表模拟）
+function getMyPublishedProjects(params) {
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      data: projectMockList.map(p => ({
+        projectId: p.projectId,
+        name: p.name,
+        belongTrack: p.belongTrack,
+        status: p.status ?? 2,
+        auditStatus: 1,
+        releaseTime: p.releaseTime,
+        viewCount: 0,
+        applyCount: 0,
+        totalRoles: 0,
+        filledRoles: 0
+      }))
+    })
+  })
+}
+
+// 我加入的项目（团队接口结构模拟）
+function getMyTeams() {
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      message: "success",
+      data: {
+        joined: [
+          {
+            projectId: 1,
+            name: "第十届互联网+创新大赛",
+            belongTrack: "互联网+",
+            role: "前端开发",
+            status: 2,
+            projectLeader: "李队长",
+            unreadPost: false
+          }
+        ],
+        applying: [],
+        invited: [],
+        rejected: []
+      }
+    })
+  })
+}
+
 // 项目详情模拟
 function getProjectDetail(projectId) {
   let item = projectMockList.find(x => x.projectId == projectId);
@@ -147,8 +256,15 @@ export default {
   sendCode,
   wxLogin,
   getUserProfile,
+  getAuthStatus,
+  verifyByEmail,
+  submitAuth,
+  uploadFile,
+  updateUserProfile,
   createProject,
   getProjectList,
+  getMyPublishedProjects,
+  getMyTeams,
   getProjectDetail,
   projectMockList
 };
