@@ -1,14 +1,36 @@
 <template>
   <view class="user-page">
     <view v-if="type === 'launched'" class="launched-wrapper">
-      <view v-for="(item, index) in launchedList" :key="index" class="project-card launched-card">
-        <text class="project-title">{{ item.title }}</text>
+      <view v-if="launchedList.length === 0 && !loading" class="empty-container">
+        <text class="empty-text">暂无已发布的项目</text>
+        <text class="empty-hint">在「新建项目」中发布后即可在此查看与管理</text>
+      </view>
+      <view
+        v-for="(item, index) in launchedList"
+        :key="item.projectId || index"
+        class="project-card launched-card"
+      >
+        <view class="launched-head" @tap="onViewLaunched(item)">
+          <text class="project-title">{{ item.title }}</text>
+          <text class="status-pill" :class="'audit-' + (item.auditStatus ?? 0)">{{ item.auditLabel }}</text>
+        </view>
+        <text class="meta-line" @tap="onViewLaunched(item)">{{ item.statusLabel }} · {{ item.metaLine }}</text>
+        <view class="launched-actions">
+          <button class="launched-btn outline" @tap.stop="onViewLaunched(item)">查看</button>
+          <button class="launched-btn primary" @tap.stop="onEditLaunched(item)">编辑</button>
+        </view>
       </view>
       <button class="btn btn-primary create-btn" @tap="onCreateProject">创建新项目</button>
     </view>
 
     <view v-else-if="type === 'joined'" class="joined-wrapper">
-      <view v-for="(item, index) in joinedList" :key="index" class="project-card joined-card" :class="`status-${item.status}`">
+      <view
+        v-for="(item, index) in joinedList"
+        :key="item.projectId || index"
+        class="project-card joined-card"
+        :class="`status-${item.status}`"
+        @tap="onViewJoined(item)"
+      >
         <view class="joined-main">
           <text class="project-title">{{ item.title }}</text>
           <text class="status-text">{{ item.statusText }}</text>
@@ -108,7 +130,10 @@ export default {
           viewCount: item.viewCount,
           applyCount: item.applyCount,
           totalRoles: item.totalRoles,
-          filledRoles: item.filledRoles
+          filledRoles: item.filledRoles,
+          statusLabel: this.projectStatusLabel(item.status),
+          auditLabel: this.auditStatusLabel(item.auditStatus),
+          metaLine: this.buildMetaLine(item)
         }))
       } catch (err) {
         console.error('获取我发起的项目失败：', err)
@@ -168,12 +193,64 @@ export default {
       this.draftedList = uni.getStorageSync('projectDrafts') || []
     },
 
+    projectStatusLabel(status) {
+      const m = { 0: '草拟', 1: '实施', 2: '招募中', 3: '完成', 4: '终止' }
+      return m[status] != null ? m[status] : '未知状态'
+    },
+    auditStatusLabel(auditStatus) {
+      const m = { 0: '待审核', 1: '已通过', 2: '未通过' }
+      return m[auditStatus] != null ? m[auditStatus] : '审核中'
+    },
+    buildMetaLine(item) {
+      const parts = []
+      if (item.viewCount != null) parts.push(`浏览 ${item.viewCount}`)
+      if (item.applyCount != null) parts.push(`申请 ${item.applyCount}`)
+      if (item.totalRoles != null) {
+        const filled = item.filledRoles != null ? item.filledRoles : 0
+        parts.push(`招募 ${filled}/${item.totalRoles}`)
+      }
+      return parts.length ? parts.join(' · ') : '点击查看详情'
+    },
+    onViewLaunched(item) {
+      if (!item.projectId) return
+      uni.navigateTo({
+        url: `/pages/projectDetail/index?projectId=${item.projectId}&hideCommunicate=1`
+      })
+    },
+    onEditLaunched(item) {
+      if (!item.projectId) return
+      if (this.isNavigating) return
+      this.isNavigating = true
+      uni.switchTab({
+        url: '/pages/create/index',
+        success: () => {
+          setTimeout(() => {
+            uni.$emit('editProject', { projectId: item.projectId })
+            this.isNavigating = false
+          }, 320)
+        },
+        fail: () => {
+          this.isNavigating = false
+        }
+      })
+    },
+    onViewJoined(item) {
+      if (!item.projectId) return
+      uni.navigateTo({
+        url: `/pages/projectDetail/index?projectId=${item.projectId}`
+      })
+    },
     onCreateProject() {
       if (this.isNavigating) return
       this.isNavigating = true
       uni.switchTab({
         url: '/pages/create/index',
-        complete: () => setTimeout(() => this.isNavigating = false, 500)
+        complete: () => {
+          setTimeout(() => {
+            uni.$emit('clearProjectEdit')
+            this.isNavigating = false
+          }, 350)
+        }
       })
     },
 
@@ -328,6 +405,89 @@ export default {
   .empty-text {
     font-size: 26rpx;
     color: #999;
+  }
+
+  .empty-hint {
+    display: block;
+    margin-top: 12rpx;
+    font-size: 24rpx;
+    color: #bbb;
+    text-align: center;
+  }
+
+  .empty-container {
+    padding: 48rpx 24rpx;
+    text-align: center;
+  }
+
+  .launched-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16rpx;
+    margin-bottom: 12rpx;
+  }
+
+  .launched-head .project-title {
+    flex: 1;
+    font-weight: 600;
+  }
+
+  .status-pill {
+    font-size: 22rpx;
+    padding: 6rpx 14rpx;
+    border-radius: 999rpx;
+    background: #f0f0f5;
+    color: #666;
+    flex-shrink: 0;
+  }
+
+  .status-pill.audit-1 {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  .status-pill.audit-2 {
+    background: #ffebee;
+    color: #c62828;
+  }
+
+  .meta-line {
+    font-size: 24rpx;
+    color: #888;
+    margin-bottom: 20rpx;
+  }
+
+  .launched-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20rpx;
+  }
+
+  .launched-btn {
+    width: 160rpx;
+    height: 70rpx;
+    font-size: 26rpx;
+    border-radius: 10rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    line-height: normal;
+  }
+
+  .launched-btn.outline {
+    background: transparent;
+    color: #355ac9;
+    border: 2rpx solid #355ac9;
+  }
+
+  .launched-btn.primary {
+    background: #355ac9;
+    color: #fff;
+    border: none;
   }
   </style>
   

@@ -31,4 +31,6 @@ export default {
 .tag { background: #f5f5f5; padding: 3px 8px; border-radius: 6px; font-size: 12px; }
 .card-footer { display: flex; justify-content: space-between; font-size: 12px; color: #999; }
 .status-recruiting { color: #007aff; }
+.status-ended { color: #999; }
+.status-draft { color: #d48806; }
 </style>

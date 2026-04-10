@@ -17,12 +17,30 @@
         {{ loading ? '登录中...' : '登录' }}
       </button>
 
-      <!-- 仅微信小程序展示 -->
-      <!-- #ifdef MP-WEIXIN -->
-      <button class="btn wx" :disabled="wxLoading" @click="handleWxLogin">
-        {{ wxLoading ? '登录中...' : '微信一键登录' }}
-      </button>
-      <!-- #endif -->
+      <view class="split-line">
+        <text class="split-text">或使用快捷登录</text>
+      </view>
+
+      <!-- 微信登录区块 -->
+      <view class="wx-panel">
+        <view class="wx-panel-title">
+          <text class="wx-icon">🟢</text>
+          <text class="wx-title-text">微信一键登录</text>
+        </view>
+        <text class="wx-desc">授权后可快速完成登录，首次登录将自动创建账号</text>
+
+        <!-- #ifdef MP-WEIXIN -->
+        <button class="btn wx" :disabled="wxLoading" @click="handleWxLogin">
+          {{ wxLoading ? '登录中...' : '微信授权并登录' }}
+        </button>
+        <!-- #endif -->
+
+        <!-- #ifndef MP-WEIXIN -->
+        <button class="btn wx disabled" disabled>
+          请在微信小程序中使用
+        </button>
+        <!-- #endif -->
+      </view>
 
       <view class="row">
         <text class="link" @click="goRegister">没有账号？去注册</text>
@@ -202,6 +220,56 @@ export default {
   background: #07c160;
   color: #fff;
   margin-top: 10px;
+}
+.split-line {
+  position: relative;
+  margin: 14px 0 8px;
+  text-align: center;
+}
+.split-line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid #eceff5;
+}
+.split-text {
+  position: relative;
+  z-index: 1;
+  padding: 0 10px;
+  background: #fff;
+  color: #9aa4b2;
+  font-size: 12px;
+}
+.wx-panel {
+  margin-top: 8px;
+  border: 1px solid #e8f7ee;
+  background: #f8fffb;
+  border-radius: 12px;
+  padding: 12px;
+}
+.wx-panel-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.wx-icon {
+  margin-right: 6px;
+}
+.wx-title-text {
+  font-size: 15px;
+  color: #1f7a45;
+  font-weight: 600;
+}
+.wx-desc {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+}
+.wx.disabled {
+  background: #c7cdd6;
+  color: #fff;
 }
 .row {
   display: flex;

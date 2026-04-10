@@ -1,52 +1,29 @@
 <template>
   <view class="container">
-    <!-- 个人信息卡片 -->
-    <view class="info-card">
-      <view class="card-title">个人信息</view>
-      <view class="info-item">
-        <view class="info-label">姓名：</view>
-        <view class="info-value">{{ userInfo.name }}</view>
-      </view>
-      <view class="info-item">
-        <view class="info-label">学号：</view>
-        <view class="info-value">{{ userInfo.studentId }}</view>
-      </view>
-      <view class="info-item">
-        <view class="info-label">校园邮箱：</view>
-        <view class="info-value">{{ userInfo.email }}</view>
+    <view class="user-card">
+      <Avatar :src="userInfo.avatarUrl" size="64" />
+      <view class="user-main">
+        <text class="user-name">{{ userInfo.name || '用户' }}</text>
+        <text class="user-sub">ID: {{ userId || '未知' }}</text>
       </view>
     </view>
 
-    <!-- 技能/经历卡片 -->
-    <view class="skill-card">
-      <view class="card-title">技能/经历</view>
-      <view class="skill-list" v-if="userInfo.skills && userInfo.skills.length > 0">
-        <view class="skill-item" v-for="(skill, index) in userInfo.skills" :key="index">
-          {{ skill }}
-        </view>
-      </view>
-      <view class="empty-tip" v-else>暂无技能/经历</view>
-    </view>
-
-    <!-- 发布的帖子 -->
-    <view class="post-section">
-      <view class="section-title">发布的帖子</view>
-      <view 
-        class="post-item" 
-        v-for="(post, index) in userPostList" 
-        :key="index"
-        @click="goPostDetail(post)"
-      >
-        <view class="post-title">{{ post.title }}</view>
-        <view class="post-desc">{{ post.content }}</view>
-        <view class="post-meta">
-          <view class="meta-item">
-            <view class="meta-icon">👍</view>
-            {{ post.likeCount }}
-          </view>
-          <view class="meta-item">
-            <view class="meta-icon">💬</view>
-            {{ post.commentCount }}
+    <view class="project-section">
+      <view class="section-title">TA 发布的项目</view>
+      <Loading show="true" text="加载中..." v-if="loading" />
+      <view v-else>
+        <view v-if="publishedProjects.length === 0" class="empty-tip">暂无可展示的项目</view>
+        <view
+          v-for="(item, index) in publishedProjects"
+          :key="item.projectId || index"
+          class="project-item"
+          @tap="goProjectDetail(item)"
+        >
+          <text class="project-title">{{ item.name }}</text>
+          <text class="project-intro">{{ item.projectIntro || `浏览 ${item.viewCount || 0} · 申请 ${item.applyCount || 0}` }}</text>
+          <view class="project-meta">
+            <text class="meta-chip">{{ item.belongTrack || '未分类' }}</text>
+            <text class="meta-status" :class="statusClass(item.status)">{{ statusText(item.status) }}</text>
           </view>
         </view>
       </view>
@@ -55,45 +32,68 @@
 </template>
 
 <script>
+import Avatar from '@/components/Avatar.vue'
+import Loading from '@/components/Loading.vue'
+import api from '@/common/api/index.js'
+
 export default {
+  components: {
+    Avatar,
+    Loading
+  },
   data() {
     return {
       userId: '',
       userInfo: {
-        name: '张伟',
-        studentId: '102XXXXXXX',
-        email: 'XXX@stu.ecnu.cn',
-        skills: ['前端开发', 'vue.js', '小程序']
+        name: '',
+        avatarUrl: ''
       },
-      userPostList: [
-        {
-          id: 1,
-          title: '第十届互联网+创新大赛组队',
-          content: 'ai图像识别项目需要前端开发，有经验的同学欢迎加入！',
-          likeCount: 23,
-          commentCount: 5
-        },
-        {
-          id: 2,
-          title: '大创项目找队友',
-          content: '做一个校园组队小程序，需要后端和产品同学一起参与！',
-          likeCount: 15,
-          commentCount: 3
-        }
-      ]
+      loading: false,
+      publishedProjects: []
     }
   },
   onLoad(options) {
-    this.userId = options.userId || '';
-    if (options.userName) {
-      this.userInfo.name = options.userName;
+    this.userId = String(options?.userId || '')
+    this.userInfo = {
+      name: options?.userName ? decodeURIComponent(options.userName) : '',
+      avatarUrl: options?.avatar ? decodeURIComponent(options.avatar) : ''
     }
+    this.fetchPublishedProjects()
   },
   methods: {
-    goPostDetail(post) {
+    statusText(status) {
+      const m = { 0: '草拟', 1: '实施中', 2: '招募中', 3: '已完成', 4: '已终止' }
+      const n = Number(status)
+      return m[n] || '招募中'
+    },
+    statusClass(status) {
+      const n = Number(status)
+      if (n === 3 || n === 4) return 'ended'
+      if (n === 0) return 'draft'
+      return 'recruiting'
+    },
+    async fetchPublishedProjects() {
+      this.loading = true
+      try {
+        if (!this.userId) {
+          this.publishedProjects = []
+          return
+        }
+        const res = await api.getUserPublishedProjects(this.userId, { page: 1, size: 50 })
+        const raw = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.data?.list) ? res.data.list : [])
+        this.publishedProjects = raw
+      } catch (e) {
+        console.error('获取用户发布项目失败', e)
+        uni.showToast({ title: '加载失败', icon: 'none' })
+      } finally {
+        this.loading = false
+      }
+    },
+    goProjectDetail(item) {
+      if (!item?.projectId) return
       uni.navigateTo({
-        url: `/pages/postDetail/postDetail?postId=${post.id}`
-      });
+        url: `/pages/projectDetail/index?projectId=${item.projectId}`
+      })
     }
   }
 }
@@ -102,116 +102,92 @@ export default {
 <style scoped>
 .container {
   min-height: 100vh;
-  background-color: #f5f5f5;
-  padding: 30rpx;
+  background: #f5f7fb;
+  padding: 24rpx;
 }
-
-.info-card, .skill-card {
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
-}
-
-.card-title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 30rpx;
-  padding-bottom: 20rpx;
-  border-bottom: 1rpx solid #eee;
-}
-
-.info-item {
+.user-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx;
   display: flex;
-  margin-bottom: 24rpx;
-  font-size: 32rpx;
-}
-
-.info-label {
-  color: #333;
-  font-weight: bold;
-  width: 160rpx;
-}
-
-.info-value {
-  color: #666;
-  flex: 1;
-}
-
-.skill-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-}
-
-.skill-item {
-  font-size: 28rpx;
-  color: #007aff;
-  background-color: #e8f3ff;
-  padding: 8rpx 16rpx;
-  border-radius: 8rpx;
-}
-
-.empty-tip {
-  font-size: 28rpx;
-  color: #999;
-  text-align: center;
-  padding: 40rpx 0;
-}
-
-.post-section {
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
-}
-
-.section-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
+  align-items: center;
+  gap: 20rpx;
   margin-bottom: 20rpx;
 }
-
-.post-item {
+.user-main {
+  display: flex;
+  flex-direction: column;
+}
+.user-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #222;
+}
+.user-sub {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #888;
+}
+.project-section {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx;
+}
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 18rpx;
+}
+.empty-tip {
+  text-align: center;
+  color: #999;
+  font-size: 26rpx;
+  padding: 40rpx 0;
+}
+.project-item {
   padding: 20rpx 0;
   border-bottom: 1rpx solid #f0f0f0;
 }
-
-.post-item:last-child {
+.project-item:last-child {
   border-bottom: none;
 }
-
-.post-title {
-  font-size: 30rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 8rpx;
+.project-title {
+  display: block;
+  font-size: 28rpx;
+  color: #222;
+  font-weight: 600;
 }
-
-.post-desc {
-  font-size: 26rpx;
+.project-intro {
+  display: block;
+  margin-top: 8rpx;
   color: #666;
-  line-height: 1.4;
-  margin-bottom: 12rpx;
-}
-
-.post-meta {
-  display: flex;
-  gap: 40rpx;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 6rpx;
   font-size: 24rpx;
+  line-height: 1.5;
+}
+.project-meta {
+  margin-top: 12rpx;
+  display: flex;
+  gap: 12rpx;
+  align-items: center;
+}
+.meta-chip {
+  font-size: 22rpx;
+  color: #1677ff;
+  background: #e6f4ff;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+}
+.meta-status {
+  font-size: 22rpx;
+}
+.meta-status.recruiting {
+  color: #1677ff;
+}
+.meta-status.ended {
   color: #999;
 }
-
-.meta-icon {
-  font-size: 28rpx;
+.meta-status.draft {
+  color: #d48806;
 }
 </style>

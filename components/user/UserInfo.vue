@@ -2,7 +2,13 @@
     <view class="card user-card">
       <view class="user-card-left">
         <view class="avatar-circle" @tap="$emit('upload-avatar')">
-          <text class="avatar-text">上传头像</text>
+          <image
+            v-if="userInfo.avatarUrl"
+            class="avatar-img"
+            :src="userInfo.avatarUrl"
+            mode="aspectFill"
+          />
+          <text v-else class="avatar-text">上传头像</text>
         </view>
       </view>
       <view class="user-card-right">
@@ -55,11 +61,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
   }
   
   .avatar-text {
     font-size: 24rpx;
     color: #355ac9;
+  }
+
+  .avatar-img {
+    width: 100%;
+    height: 100%;
   }
   
   .user-card-right {
