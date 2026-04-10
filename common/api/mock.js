@@ -5,22 +5,52 @@ const projectMockList = [
     name: "第十届互联网+创新大赛",
     belongTrack: "互联网+",
     projectIntro: "AI图像识别，需要前端开发",
+    projectType: "创新训练",
+    level: 1,
+    projectFeatures: "",
     tags: "前端,Vue,AI",
-    publisherInfo: { nickname: "李队长" },
+    allowCrossMajor: true,
+    isAnonymous: false,
+    contactInfo: "",
+    publisherInfo: { userId: 10001, nickname: "李队长", avatar: "" },
     status: 2,
-    deadlineRecruit: "2026-06-01",
-    releaseTime: "2026-03-10"
+    deadlineRecruit: "2026-06-01T23:59:00",
+    releaseTime: "2026-03-10",
+    roleRequirements: [
+      {
+        requirementId: 301,
+        role: "前端开发",
+        memberQuota: 2,
+        recruitRequirements: "熟悉 Vue",
+        currentMembers: 0
+      }
+    ]
   },
   {
     projectId: 2,
     name: "大创项目-校园二手交易平台",
     belongTrack: "大创",
     projectIntro: "校园小程序，需要全栈开发",
+    projectType: "创新训练",
+    level: 1,
+    projectFeatures: "",
     tags: "uniapp,小程序,全栈",
-    publisherInfo: { nickname: "王同学" },
+    allowCrossMajor: false,
+    isAnonymous: false,
+    contactInfo: "",
+    publisherInfo: { userId: 10002, nickname: "王同学", avatar: "" },
     status: 2,
-    deadlineRecruit: "2026-07-15",
-    releaseTime: "2026-03-12"
+    deadlineRecruit: "2026-07-15T23:59:00",
+    releaseTime: "2026-03-12",
+    roleRequirements: [
+      {
+        requirementId: 302,
+        role: "全栈",
+        memberQuota: 1,
+        recruitRequirements: "熟悉 uni-app",
+        currentMembers: 0
+      }
+    ]
   }
 ];
 
@@ -164,11 +194,26 @@ function createProject(params) {
     name: params?.name || "未命名项目",
     belongTrack: params?.belongTrack || "其他",
     projectIntro: params?.projectIntro || "",
+    projectType: params?.projectType || "创新训练",
+    level: params?.level ?? 1,
+    projectFeatures: params?.projectFeatures || "",
     tags: params?.tags || "",
-    publisherInfo: { nickname: "测试用户" },
+    allowCrossMajor: !!params?.allowCrossMajor,
+    isAnonymous: !!params?.isAnonymous,
+    contactInfo: params?.contactInfo || "",
+    publisherInfo: { userId: 10001, nickname: "测试用户", avatar: "" },
     status: typeof params?.status === "number" ? params.status : 0,
     deadlineRecruit: params?.deadlineRecruit || iso,
-    releaseTime: iso
+    releaseTime: iso,
+    roleRequirements: Array.isArray(params?.roleRequirements)
+      ? params.roleRequirements.map((r, i) => ({
+          requirementId: 500 + i,
+          role: r.role,
+          memberQuota: Number(r.memberQuota) || 0,
+          recruitRequirements: r.recruitRequirements || "",
+          currentMembers: 0
+        }))
+      : []
   }
 
   projectMockList.unshift(item)
@@ -213,6 +258,30 @@ function getMyPublishedProjects(params) {
   })
 }
 
+// 根据用户ID获取其发布项目（模拟）
+function getUserPublishedProjects(userId, params) {
+  const uid = String(userId || '')
+  let list = projectMockList.filter((p) => String(p?.publisherInfo?.userId || '') === uid)
+  if (!uid) list = []
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      data: list.map((p) => ({
+        projectId: p.projectId,
+        name: p.name,
+        belongTrack: p.belongTrack,
+        status: p.status ?? 2,
+        auditStatus: 1,
+        releaseTime: p.releaseTime,
+        viewCount: 0,
+        applyCount: 0,
+        totalRoles: p.roleRequirements?.reduce((s, r) => s + (Number(r.memberQuota) || 0), 0) || 0,
+        filledRoles: p.roleRequirements?.reduce((s, r) => s + (Number(r.currentMembers) || 0), 0) || 0
+      }))
+    })
+  })
+}
+
 // 我加入的项目（团队接口结构模拟）
 function getMyTeams() {
   return new Promise((resolve) => {
@@ -245,9 +314,76 @@ function getProjectDetail(projectId) {
   return new Promise((resolve) => {
     resolve({
       code: 200,
-      data: item || {}
+      data: item ? { ...item } : {}
     });
   });
+}
+
+function updateProject(projectId, params) {
+  const idx = projectMockList.findIndex(x => String(x.projectId) === String(projectId))
+  return new Promise((resolve, reject) => {
+    if (idx < 0) {
+      reject({ code: 404, message: '项目不存在' })
+      return
+    }
+    const prev = projectMockList[idx]
+    projectMockList[idx] = {
+      ...prev,
+      ...params,
+      projectId: prev.projectId,
+      roleRequirements: Array.isArray(params.roleRequirements)
+        ? params.roleRequirements.map((r, i) => ({
+            requirementId: prev.roleRequirements?.[i]?.requirementId || 400 + i,
+            role: r.role,
+            memberQuota: r.memberQuota,
+            recruitRequirements: r.recruitRequirements || '',
+            currentMembers: prev.roleRequirements?.[i]?.currentMembers ?? 0
+          }))
+        : prev.roleRequirements
+    }
+    resolve({
+      code: 200,
+      message: 'success',
+      data: { message: '更新成功' }
+    })
+  })
+}
+
+function applyProject(projectId, params) {
+  return new Promise((resolve, reject) => {
+    const requirementId = Number(params?.requirementId)
+    const applyReason = String(params?.applyReason || '').trim()
+    if (!projectId || !Number.isFinite(requirementId) || !applyReason) {
+      reject({ code: 400, message: '参数不完整' })
+      return
+    }
+    resolve({
+      code: 200,
+      message: 'success',
+      data: {
+        applicationId: Date.now(),
+        message: '投递成功，等待队长回复',
+        sessionId: Date.now() + 1
+      }
+    })
+  })
+}
+
+function getMyTalentCard() {
+  return new Promise((resolve) => {
+    resolve({
+      code: 200,
+      message: 'success',
+      data: {
+        cardId: 601,
+        resumeFile: {
+          fileId: 10003,
+          fileName: '我的简历.pdf',
+          fileUrl: 'https://example.com/resume/10003.pdf'
+        }
+      }
+    })
+  })
 }
 
 export default {
@@ -264,7 +400,11 @@ export default {
   createProject,
   getProjectList,
   getMyPublishedProjects,
+  getUserPublishedProjects,
   getMyTeams,
   getProjectDetail,
+  updateProject,
+  applyProject,
+  getMyTalentCard,
   projectMockList
 };

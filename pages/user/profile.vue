@@ -41,6 +41,13 @@
           <input class="form-input" v-model="form.techStack" placeholder="逗号分隔，如 Vue,Java" />
         </view>
         <view class="form-item">
+          <text class="form-label">我的简历（投递复用）</text>
+          <view class="resume-row">
+            <button class="resume-btn" @tap="onUploadResume">上传简历</button>
+            <text class="resume-name">{{ form.resumeFileName || '未上传' }}</text>
+          </view>
+        </view>
+        <view class="form-item">
           <text class="form-label">个人简介</text>
           <textarea
             class="form-textarea"
@@ -79,6 +86,8 @@
         form: {
           nickname: '',
           avatarFileId: null,
+          resumeFileId: null,
+          resumeFileName: '',
           gender: 0,
           birthday: '',
           major: '',
@@ -106,6 +115,57 @@
       onBirthdayChange(e) {
         // picker 返回格式为 YYYY-MM-DD
         this.form.birthday = e.detail.value
+      },
+      async onUploadResume() {
+        const token = uni.getStorageSync('access-token')
+        if (!token) {
+          uni.showToast({ title: '请先登录', icon: 'none' })
+          setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 300)
+          return
+        }
+        try {
+          const filePath = await new Promise((resolve, reject) => {
+            if (typeof uni.chooseMessageFile === 'function') {
+              uni.chooseMessageFile({
+                count: 1,
+                type: 'file',
+                success: (res) => {
+                  const file = res?.tempFiles?.[0]
+                  resolve(file?.path || file?.tempFilePath || '')
+                },
+                fail: reject
+              })
+              return
+            }
+            uni.chooseImage({
+              count: 1,
+              success: (res) => resolve(res?.tempFilePaths?.[0] || ''),
+              fail: reject
+            })
+          })
+          if (!filePath) return
+          uni.showLoading({ title: '上传中...' })
+          const uploadRes = await api.uploadFile({ filePath, targetType: 1, isTemp: false })
+          const file = uploadRes?.data
+          if (!file?.fileId) {
+            uni.showToast({ title: '上传失败', icon: 'none' })
+            return
+          }
+          this.form.resumeFileId = file.fileId
+          this.form.resumeFileName = file.fileName || '已上传简历'
+          uni.setStorageSync('userApplyResume', {
+            fileId: file.fileId,
+            fileName: file.fileName || '',
+            fileUrl: file.fileUrl || ''
+          })
+          uni.showToast({ title: '简历已上传', icon: 'success' })
+        } catch (e) {
+          if (!String(e?.errMsg || '').includes('cancel')) {
+            uni.showToast({ title: e?.message || '上传失败', icon: 'none' })
+          }
+        } finally {
+          uni.hideLoading()
+        }
       },
       onUploadAvatar() {
         const token = uni.getStorageSync('access-token')
@@ -171,6 +231,9 @@
           this.form.awardExperience = u.awardExperience || ''
           this.form.avatarFileId = u.avatarFile?.fileId ?? null
           this.avatarUrl = u.avatarFile?.fileUrl || ''
+          const resume = uni.getStorageSync('userApplyResume') || {}
+          this.form.resumeFileId = resume.fileId || null
+          this.form.resumeFileName = resume.fileName || ''
         } catch (e) {
           console.error('加载个人资料失败：', e)
           uni.showToast({ title: e?.data?.message || e?.message || '加载失败', icon: 'none' })
@@ -282,6 +345,34 @@
     border-radius: 16rpx;
     border: 2rpx solid #e0e0ea;
     font-size: 24rpx;
+  }
+
+  .resume-row {
+    margin-top: 8rpx;
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+  }
+
+  .resume-btn {
+    width: 180rpx;
+    height: 64rpx;
+    line-height: 64rpx;
+    font-size: 24rpx;
+    border-radius: 14rpx;
+    color: #355ac9;
+    background: #eef3ff;
+    border: 2rpx solid #d8e4ff;
+    margin: 0;
+  }
+
+  .resume-name {
+    flex: 1;
+    font-size: 22rpx;
+    color: #666;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .picker-value {

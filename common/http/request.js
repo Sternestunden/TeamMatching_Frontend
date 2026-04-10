@@ -1,5 +1,7 @@
 //此vm参数为页面的实例，可以通过它引用vuex中的变量
 import env from '@/common/config/env.js'
+import { scheduleRelogin, isUnauthorizedCode } from '@/common/http/authRedirect.js'
+
 export default (vm) => {
 	//初始化请求配置
 	uni.$u.http.setConfig((config) => {
@@ -50,44 +52,52 @@ export default (vm) => {
 		/* 对响应成功做点什么 可使用async await 做异步操作*/
 		uni.hideLoading();
 		const data = response.data || {}
+		const cfg = response.config || {}
+
+		// HTTP 401：常见于 Spring Security / Gateway，不会带 code:200
+		if (response.statusCode === 401) {
+			scheduleRelogin(cfg, data?.message || data?.error)
+			return Promise.reject(response)
+		}
 
 		if (response.statusCode !== 200) {
-			uni.$u.toast(data?.message || '接口请求失败'); // 尽量透传后端message
-			return Promise.reject(response);
+			uni.$u.toast(data?.message || '接口请求失败')
+			return Promise.reject(response)
 		}
-		//自定义参数
-		const custom = response.config?.custom || {}
-		
-		// 检查业务状态码
+
+		const custom = cfg.custom || {}
+
+		// 业务状态码 401：文档约定「未认证」
 		if (data.code !== undefined && data.code !== 200) {
-			// 如果没有显式定义custom的toast参数为false的话，默认对报错进行toast弹出提示
+			if (isUnauthorizedCode(data.code)) {
+				scheduleRelogin(cfg, data.message)
+				if (custom?.catch) {
+					return Promise.reject(data)
+				}
+				return new Promise(() => {})
+			}
 			if (custom.toast !== false) {
 				uni.$u.toast(data.message || '请求失败')
 			}
-			if(401 == data.code) {
-				uni.removeStorageSync("access-token")
-				uni.removeStorageSync("userInfo")
-				setTimeout(()=>{
-					uni.navigateTo({
-						url: '/pages/login/login'
-					});
-				},1000)
-			}
-			// 如果需要catch返回，则进行reject
 			if (custom?.catch) {
 				return Promise.reject(data)
-			}else{
-				// 否则返回一个pending中的promise，请求不会进入catch中
-				return new Promise(() => {})
 			}
+			return new Promise(() => {})
 		}
-		// 成功返回数据
 		return data === undefined ? {} : data
 	}, (response) => {
-		// 对响应错误做点什么 （statusCode !== 200）
-		uni.hideLoading();
-		const errorMsg = response?.data?.message || response?.message || "工程师被UFO带走了-_-!";
-		uni.$u.toast(errorMsg);
+		uni.hideLoading()
+		const cfg = response?.config || {}
+		const data = response?.data || {}
+		const status = response?.statusCode
+
+		if (status === 401) {
+			scheduleRelogin(cfg, data?.message || data?.error)
+			return Promise.reject(response)
+		}
+
+		const errorMsg = data?.message || response?.message || '工程师被UFO带走了-_-!'
+		uni.$u.toast(errorMsg)
 		return Promise.reject(response)
 	})
 }

@@ -160,22 +160,25 @@ export default {
       let result = [...this.projectList];
 
       // 后端字段 → 前端字段映射
-      result = result.map(item => ({
+      // 接口 status：0草拟 1实施 2招募中 3完成 4终止（原先把「非0」都当已结束，导致 2 被误判）
+      result = result.map(item => {
+        const st = this.mapProjectStatusForCard(item.status)
+        return {
         id: item.projectId,
         name: item.name,
         desc: item.projectIntro,
         category: item.belongTrack === "大创" ? "innovation" : "internet+",
         tags: item.tags ? item.tags.split(",") : [],
-        founder: item.publisherInfo?.nickname || "匿名",
-        status: item.status === 0 ? "招募中" : "已结束",
-        statusClass: "status-recruiting",
+        founder: this.mapFounderForListItem(item),
+        status: st.text,
+        statusClass: st.class,
         deadline: item.deadlineRecruit ? item.deadlineRecruit.slice(5, 10) : "",
         submitTime: item.releaseTime || "暂无发布时间",
-        // 🔥 新增筛选字段（根据你的项目数据结构调整）
         grade: item.grade || "不限",
         competition: item.competition || "其他",
         techStack: item.techStack ? item.techStack.split(",") : []
-      }));
+        }
+      });
 
       // 分类筛选
       if (this.currentCategory !== "all") {
@@ -246,16 +249,63 @@ export default {
   },
 
   methods: {
+    /** 与 TeamMatching 接口文档一致：仅 3完成 / 4终止 视为已结束 */
+    mapProjectStatusForCard(status) {
+      const n = Number(status)
+      if (!Number.isFinite(n)) {
+        return { text: '招募中', class: 'status-recruiting' }
+      }
+      if (n === 3 || n === 4) {
+        return { text: '已结束', class: 'status-ended' }
+      }
+      if (n === 0) {
+        return { text: '草拟', class: 'status-draft' }
+      }
+      if (n === 1) {
+        return { text: '实施中', class: 'status-recruiting' }
+      }
+      if (n === 2) {
+        return { text: '招募中', class: 'status-recruiting' }
+      }
+      return { text: '招募中', class: 'status-recruiting' }
+    },
+
+    /** 列表项是否匿名发布（需后端在 ProjectListItem 中带 isAnonymous） */
+    isListItemAnonymous(item) {
+      const v = item?.isAnonymous
+      return v === true || v === 1 || v === '1' || v === 'true'
+    },
+
+    /** 匿名时不展示真实昵称，与接口说明一致 */
+    mapFounderForListItem(item) {
+      if (this.isListItemAnonymous(item)) {
+        return '匿名用户'
+      }
+      return item.publisherInfo?.nickname || '匿名'
+    },
+
+    buildProjectListQuery() {
+      const params = {
+        sort: this.currentSort,
+        keyword: this.searchKeyword,
+        page: this.currentPage || 1,
+        size: 10
+      }
+      // 接口 track 为可选；传 all 会导致后端筛不出数据，综合不传 track（空）
+      if (this.currentCategory && this.currentCategory !== 'all') {
+        const TRACK_MAP = {
+          'internet+': '互联网+',
+          innovation: '大创'
+        }
+        params.track = TRACK_MAP[this.currentCategory] || this.currentCategory
+      }
+      return params
+    },
+
     async fetchProjects() {
       this.loading = true;
       try {
-        const res = await api.getProjectList({
-          track: this.currentCategory,
-          sort: this.currentSort,
-          keyword: this.searchKeyword,
-          page: this.currentPage || 1,
-          size: 10
-        });
+        const res = await api.getProjectList(this.buildProjectListQuery());
 
         console.log("接口原始返回：", res);
 
@@ -265,15 +315,26 @@ export default {
           this.projectList = res.data.list;
         } else {
           console.warn("接口返回格式异常或无数据", res);
+          this.projectList = []
         }
 
       } catch (err) {
         console.error("捕获到异常（可能是Code非0），尝试提取数据...", err);
+        // 给用户一个明确提示，避免“空列表但不知道原因”
+        const msg =
+          err?.data?.message ||
+          err?.message ||
+          (typeof err?.errMsg === 'string' ? err.errMsg : '') ||
+          '获取项目失败'
+        uni.showToast({ title: msg, icon: 'none' })
+
         if (err.data && Array.isArray(err.data)) {
           console.log("从错误中抢救到了数据！");
           this.projectList = err.data;
         } else if (err.data && err.data.data && Array.isArray(err.data.data)) {
            this.projectList = err.data.data;
+        } else {
+          this.projectList = []
         }
       } finally {
         this.loading = false;

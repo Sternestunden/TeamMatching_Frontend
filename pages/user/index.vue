@@ -35,13 +35,14 @@
           </view>
           <text class="item-arrow">›</text> 
         </view>
-        <view class="list-item disabled" @tap="goMyProjects('darct')">
+        <view class="list-item" @tap="goMyProjects('draft')">
           <view class="item-left">
             <view class="item-icon-circle item-icon-lock">
               <text class="item-icon-text">草</text>
             </view>
             <text class="item-text">草稿箱</text>
           </view>
+          <text class="item-arrow">›</text>
         </view>
       </view>
     </view>

@@ -1155,8 +1155,8 @@ paths:
               required:
                 - name
                 - belongTrack
-                - projectIntro
                 - deadlineRecruit
+                - progectProgress
               properties:
                 name:
                   type: string
@@ -1182,6 +1182,9 @@ paths:
                   type: string
                   description: 项目详细介绍
                   example: 本项目旨在利用人工智能技术，为大学生提供一个高效、精准的比赛组队平台
+                progectProgress:
+                  type: string
+                  description: 项目进展说明
                 projectFeatures:
                   type: string
                   description: 项目特点/亮点
@@ -1241,6 +1244,7 @@ paths:
                         type: string
                         description: 具体招募要求
                         example: 熟悉Vue.js，有小程序开发经验
+            examples: {}
         required: true
       responses:
         '200':
@@ -1568,7 +1572,7 @@ paths:
           headers: {}
       security:
         - token: []
-  /project/list/my-published:
+  /project/my-published:
     get:
       summary: 获取我发布的项目列表
       deprecated: false
@@ -2022,6 +2026,96 @@ paths:
           headers: {}
       security:
         - token: []
+  /project/user/{userId}/published:
+    get:
+      summary: 根据用户ID获取其发布的项目列表
+      deprecated: false
+      description: 公开接口：按发布人 userId 查询项目卡片列表（可按 status/auditStatus 分页筛选）
+      operationId: getUserPublishedProjects
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: userId
+          in: path
+          description: 用户ID（发布人）
+          required: true
+          example: 0
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: 按项目状态筛选（0-草拟 1-实施 2-招募中 3-完成 4-终止）
+          required: false
+          schema:
+            type: integer
+        - name: auditStatus
+          in: query
+          description: 按审核状态筛选（0-待审核 1-通过 2-驳回）
+          required: false
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: Authorization
+          in: header
+          description: ''
+          example: Bearer {{bearerToken}}
+          schema:
+            type: string
+            default: Bearer {{bearerToken}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            projectId:
+                              type: integer
+                            name:
+                              type: string
+                            belongTrack:
+                              type: string
+                            status:
+                              type: integer
+                            auditStatus:
+                              type: integer
+                            releaseTime:
+                              type: string
+                              format: date-time
+                            viewCount:
+                              type: integer
+                            applyCount:
+                              type: integer
+                            totalRoles:
+                              type: integer
+                              description: 总需人数
+                            filledRoles:
+                              type: integer
+                              description: 已招募人数
+          headers: {}
+      security: []
   /talent/card:
     post:
       summary: 创建/更新人才卡片
@@ -5660,64 +5754,6 @@ paths:
         - token: []
 components:
   schemas:
-    UnauthorizedError:
-      type: object
-      properties:
-        code:
-          type: integer
-          example: 401
-        message:
-          type: string
-          example: 未授权，请先登录
-        data:
-          type: object
-          properties: {}
-          nullable: true
-    ForbiddenError:
-      type: object
-      properties:
-        code:
-          type: integer
-          example: 403
-        message:
-          type: string
-          example: 无权访问该资源
-        data:
-          type: object
-          properties: {}
-          nullable: true
-    NotFoundError:
-      type: object
-      properties:
-        code:
-          type: integer
-          example: 404
-        message:
-          type: string
-          example: 请求的资源不存在
-        data:
-          type: object
-          properties: {}
-          nullable: true
-    PageRequest:
-      type: object
-      properties:
-        page:
-          type: integer
-          default: 1
-          description: 页码（从1开始）
-        size:
-          type: integer
-          default: 20
-          description: 每页条数
-        sortBy:
-          type: string
-          default: createdTime
-          description: 排序字段
-        sortDir:
-          type: string
-          default: desc
-          description: 排序方向：asc/desc
     ApiResponse:
       type: object
       properties:
@@ -5769,94 +5805,6 @@ components:
           format: int32
           description: 消息类型：1-文字 2-图片 3-系统通知 4-投递卡片 5-邀请卡片
           example: 1
-    StandardResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          description: 状态码：200-成功 400-参数错误 401-未授权 403-禁止访问 404-资源不存在 500-服务器错误
-          example: 200
-        message:
-          type: string
-          description: 提示信息
-          example: success
-        timestamp:
-          type: integer
-          description: 时间戳
-          example: 1625097600000
-    UserProfile:
-      type: object
-      properties:
-        userId:
-          type: integer
-          description: 用户ID
-        studentId:
-          type: string
-          description: 学号
-        username:
-          type: string
-          description: 真实姓名
-        nickname:
-          type: string
-          description: 用户昵称
-        avatarFile:
-          type: object
-          description: 头像文件信息
-          properties:
-            fileId:
-              type: integer
-            fileName:
-              type: string
-            fileUrl:
-              type: string
-            fileSize:
-              type: integer
-        gender:
-          type: integer
-          description: 0-未知 1-男 2-女
-          enum:
-            - 0
-            - 1
-            - 2
-        birthday:
-          type: string
-          format: date
-          description: 出生日期
-        major:
-          type: string
-          description: 专业
-        grade:
-          type: string
-          description: 年级
-        email:
-          type: string
-          description: 邮箱
-        phone:
-          type: string
-          description: 手机号
-        techStack:
-          type: string
-          description: 技术栈
-        personalIntro:
-          type: string
-          description: 个人简介
-        awardExperience:
-          type: string
-          description: 获奖经历
-        authStatus:
-          type: integer
-          description: 认证状态：0-待审核 1-已通过 2-未认证
-          enum:
-            - 0
-            - 1
-            - 2
-        isTalentVisible:
-          type: boolean
-          description: 人才卡片是否可见
-        createdTime:
-          type: string
-          format: date-time
-          description: 注册时间
     ChatMessageResponse:
       type: object
       description: 通过 /topic/chat/{sessionId} 推送的单条消息结构
@@ -5950,32 +5898,6 @@ components:
               currentMembers:
                 type: integer
                 description: 已有人数
-    FileInfo:
-      type: object
-      properties:
-        fileId:
-          type: integer
-        fileName:
-          type: string
-        fileUrl:
-          type: string
-        fileSize:
-          type: integer
-        fileType:
-          type: string
-        fileExtension:
-          type: string
-        md5Hash:
-          type: string
-        targetType:
-          type: integer
-        targetId:
-          type: integer
-        isTemp:
-          type: boolean
-        createdTime:
-          type: string
-          format: date-time
     TalentCardItem:
       type: object
       properties:
@@ -6013,107 +5935,6 @@ components:
           type: string
           format: date-time
           description: 最后活跃时间
-    SkillCertification:
-      type: object
-      properties:
-        certId:
-          type: integer
-        skillName:
-          type: string
-        certName:
-          type: string
-        certFile:
-          $ref: '#/components/schemas/FileInfo'
-        issueDate:
-          type: string
-          format: date
-        issuer:
-          type: string
-        certNumber:
-          type: string
-        description:
-          type: string
-        auditStatus:
-          type: integer
-          enum:
-            - 0
-            - 1
-            - 2
-        auditTime:
-          type: string
-          format: date-time
-        createdTime:
-          type: string
-          format: date-time
-    ChatSessionItem:
-      type: object
-      properties:
-        sessionId:
-          type: integer
-          description: 会话ID
-        targetUser:
-          type: object
-          description: 对方用户信息
-          properties:
-            userId:
-              type: integer
-            nickname:
-              type: string
-            avatar:
-              type: string
-        lastMessage:
-          type: string
-          description: 最后一条消息内容
-        lastMsgTime:
-          type: string
-          format: date-time
-          description: 最后消息时间
-        unreadCount:
-          type: integer
-          description: 当前用户未读数
-        recruitStatus:
-          type: string
-          description: 沟通状态（可选，用于状态流转）
-        projectId:
-          type: integer
-          description: 关联项目ID
-        projectName:
-          type: string
-          description: 关联项目名称
-    TalentCard:
-      type: object
-      properties:
-        cardId:
-          type: integer
-        status:
-          type: integer
-        isVisible:
-          type: boolean
-        cardTitle:
-          type: string
-        targetDirection:
-          type: string
-        expectedCompetition:
-          type: string
-        expectedRole:
-          type: string
-        selfStatement:
-          type: string
-        skillTags:
-          type: string
-        resumeFile:
-          $ref: '#/components/schemas/FileInfo'
-        portfolioFile:
-          $ref: '#/components/schemas/FileInfo'
-        githubUrl:
-          type: string
-        viewCount:
-          type: integer
-        inviteCount:
-          type: integer
-        updateTime:
-          type: string
-          format: date-time
     MessageItem:
       type: object
       properties:
