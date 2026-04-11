@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "个人中心",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#f5f7fb",
+  "usingComponents": {
+    "user-info": "../../components/user/UserInfo",
+    "skill-tags": "../../components/user/SkillTags"
+  }
+}

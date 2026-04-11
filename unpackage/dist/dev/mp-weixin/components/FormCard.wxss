@@ -1,0 +1,17 @@
+
+.card-wrapper.data-v-931a7a4a {
+  width: 90%;
+  margin: 20rpx auto;
+}
+.card-body.data-v-931a7a4a {
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 10rpx;
+  padding: 30rpx;
+  box-sizing: border-box;
+}
+.card-title.data-v-931a7a4a {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 30rpx;
+  color: #333;
+}

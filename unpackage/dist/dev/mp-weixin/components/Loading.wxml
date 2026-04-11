@@ -1,0 +1,1 @@
+<view class="loading-container data-v-65e10ca8" hidden="{{!b}}"><view class="loading-spinner data-v-65e10ca8"></view><text class="loading-text data-v-65e10ca8">{{a}}</text></view>

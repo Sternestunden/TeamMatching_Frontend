@@ -1,11 +1,11 @@
 import "./chunk-NAVY3LVQ.js";
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/vue.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/vue.js
 var defineMixin = (options) => {
   return options;
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/function/test.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/function/test.js
 function email(value) {
   return /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/.test(value);
 }
@@ -203,7 +203,7 @@ var test_default = {
   string
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/function/digit.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/function/digit.js
 var _boundaryCheckingState = true;
 function strip(num, precision = 15) {
   return +parseFloat(Number(num).toPrecision(precision));
@@ -294,7 +294,7 @@ var digit_default = {
   enableBoundaryChecking
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/config/config.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/config/config.js
 var version = "3";
 if (true) {
   console.log(`
@@ -353,7 +353,7 @@ var config_default = {
   loadFontOnce: false
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/function/index.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/function/index.js
 function range2(min = 0, max = 0, value = 0) {
   return Math.max(min, Math.min(max, Number(value)));
 }
@@ -938,7 +938,7 @@ var function_default = {
   rpx2px
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/util/route.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/util/route.js
 var Router = class {
   constructor() {
     this.config = {
@@ -1038,7 +1038,7 @@ var Router = class {
 };
 var route_default = new Router().route;
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/mixin/mixin.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/mixin/mixin.js
 var mixin = defineMixin({
   // 定义每个组件都可能需要用到的外部样式以及类名
   props: {
@@ -1172,10 +1172,10 @@ var mixin = defineMixin({
   }
 });
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/mixin/mpMixin.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/mixin/mpMixin.js
 var mpMixin = defineMixin({});
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/function/colorGradient.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/function/colorGradient.js
 function colorGradient(startColor = "rgb(0, 0, 0)", endColor = "rgb(255, 255, 255)", step = 10) {
   const startRGB = hexToRgb(startColor, false);
   const startR = startRGB[0];
@@ -1287,7 +1287,7 @@ var colorGradient_default = {
   colorToRgba
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/function/debounce.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/function/debounce.js
 var timeout = null;
 function debounce(func2, wait = 500, immediate = false) {
   if (timeout !== null)
@@ -1307,7 +1307,7 @@ function debounce(func2, wait = 500, immediate = false) {
 }
 var debounce_default = debounce;
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/function/throttle.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/function/throttle.js
 var timer;
 var flag;
 function throttle(func2, wait = 500, immediate = true) {
@@ -1329,7 +1329,7 @@ function throttle(func2, wait = 500, immediate = true) {
 }
 var throttle_default = throttle;
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/function/calc.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/function/calc.js
 function add(arg1, arg2) {
   var r1, r2, m;
   try {
@@ -1392,7 +1392,7 @@ var calc_default = {
   div
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/config/zIndex.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/config/zIndex.js
 var zIndex_default = {
   toast: 10090,
   noNetwork: 10080,
@@ -1405,7 +1405,7 @@ var zIndex_default = {
   indexListSticky: 965
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/config/color.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/config/color.js
 var color = {
   primary: "#3c9cff",
   info: "#909399",
@@ -1421,7 +1421,7 @@ var color = {
 };
 var color_default = color;
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/utils.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/utils.js
 var { toString } = Object.prototype;
 function isArray(val) {
   return toString.call(val) === "[object Array]";
@@ -1477,7 +1477,7 @@ function isUndefined(val) {
   return typeof val === "undefined";
 }
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/helpers/buildURL.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/helpers/buildURL.js
 function encode(val) {
   return encodeURIComponent(val).replace(/%40/gi, "@").replace(/%3A/gi, ":").replace(/%24/g, "$").replace(/%2C/gi, ",").replace(/%20/g, "+").replace(/%5B/gi, "[").replace(/%5D/gi, "]");
 }
@@ -1520,17 +1520,17 @@ function buildURL(url2, params2) {
   return url2;
 }
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/helpers/isAbsoluteURL.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/helpers/isAbsoluteURL.js
 function isAbsoluteURL(url2) {
   return /^([a-z][a-z\d+\-.]*:)?\/\//i.test(url2);
 }
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/helpers/combineURLs.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/helpers/combineURLs.js
 function combineURLs(baseURL, relativeURL) {
   return relativeURL ? `${baseURL.replace(/\/+$/, "")}/${relativeURL.replace(/^\/+/, "")}` : baseURL;
 }
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/core/buildFullPath.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/core/buildFullPath.js
 function buildFullPath(baseURL, requestedURL) {
   if (baseURL && !isAbsoluteURL(requestedURL)) {
     return combineURLs(baseURL, requestedURL);
@@ -1538,7 +1538,7 @@ function buildFullPath(baseURL, requestedURL) {
   return requestedURL;
 }
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/core/settle.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/core/settle.js
 function settle(resolve, reject, response) {
   const { validateStatus: validateStatus2 } = response.config;
   const status = response.statusCode;
@@ -1549,7 +1549,7 @@ function settle(resolve, reject, response) {
   }
 }
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/adapters/index.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/adapters/index.js
 var mergeKeys = (keys, config2) => {
   const config = {};
   keys.forEach((prop) => {
@@ -1612,10 +1612,10 @@ var adapters_default = (config) => new Promise((resolve, reject) => {
   }
 });
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/core/dispatchRequest.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/core/dispatchRequest.js
 var dispatchRequest_default = (config) => adapters_default(config);
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/core/InterceptorManager.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/core/InterceptorManager.js
 function InterceptorManager() {
   this.handlers = [];
 }
@@ -1640,7 +1640,7 @@ InterceptorManager.prototype.forEach = function forEach2(fn) {
 };
 var InterceptorManager_default = InterceptorManager;
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/core/mergeConfig.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/core/mergeConfig.js
 var mergeKeys2 = (keys, globalsConfig, config2) => {
   const config = {};
   keys.forEach((prop) => {
@@ -1702,7 +1702,7 @@ var mergeConfig_default = (globalsConfig, config2 = {}) => {
   return config;
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/core/defaults.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/core/defaults.js
 var defaults_default = {
   baseURL: "",
   header: {},
@@ -1717,7 +1717,7 @@ var defaults_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/utils/clone.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/utils/clone.js
 var clone = function() {
   "use strict";
   function _instanceof(obj, type) {
@@ -1914,7 +1914,7 @@ var clone = function() {
 }();
 var clone_default = clone;
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/core/Request.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/core/Request.js
 var Request = class {
   /**
   * @param {Object} arg - 全局配置
@@ -2052,14 +2052,14 @@ var Request = class {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/luch-request/index.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/luch-request/index.js
 var luch_request_default = Request;
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/function/http.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/function/http.js
 var http = new luch_request_default();
 var http_default = http;
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-action-sheet/actionSheet.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-action-sheet/actionSheet.js
 var actionSheet_default = {
   // action-sheet组件
   actionSheet: {
@@ -2080,7 +2080,7 @@ var actionSheet_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-album/album.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-album/album.js
 var album_default = {
   // album 组件
   album: {
@@ -2101,7 +2101,7 @@ var album_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-alert/alert.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-alert/alert.js
 var alert_default = {
   // alert警告组件
   alert: {
@@ -2120,7 +2120,7 @@ var alert_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-avatar/avatar.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-avatar/avatar.js
 var avatar_default = {
   // avatar 组件
   avatar: {
@@ -2141,7 +2141,7 @@ var avatar_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-avatar-group/avatarGroup.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-avatar-group/avatarGroup.js
 var avatarGroup_default = {
   // avatarGroup 组件
   avatarGroup: {
@@ -2157,7 +2157,7 @@ var avatarGroup_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-back-top/backtop.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-back-top/backtop.js
 var backtop_default = {
   // backtop组件
   backtop: {
@@ -2177,7 +2177,7 @@ var backtop_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-badge/badge.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-badge/badge.js
 var badge_default = {
   // 徽标数组件
   badge: {
@@ -2197,7 +2197,7 @@ var badge_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-button/button.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-button/button.js
 var button_default = {
   // button组件
   button: {
@@ -2233,7 +2233,7 @@ var button_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/i18n/locales/zh-Hans.json
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/i18n/locales/zh-Hans.json
 var zh_Hans_default = {
   "up.common.cancel": "取消",
   "up.common.confirm": "确定",
@@ -2320,7 +2320,7 @@ var zh_Hans_default = {
   "up.goodsSku.buyAmount": "购买数量"
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/i18n/locales/zh-Hant.json
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/i18n/locales/zh-Hant.json
 var zh_Hant_default = {
   "up.common.cancel": "取消",
   "up.common.confirm": "確定",
@@ -2407,7 +2407,7 @@ var zh_Hant_default = {
   "up.goodsSku.buyAmount": "購買數量"
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/i18n/locales/en.json
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/i18n/locales/en.json
 var en_default = {
   "up.common.cancel": "Cancel",
   "up.common.confirm": "Confirm",
@@ -2494,7 +2494,7 @@ var en_default = {
   "up.goodsSku.buyAmount": "Quantity"
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/i18n/locales/es.json
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/i18n/locales/es.json
 var es_default = {
   "up.common.cancel": "Cancelar",
   "up.common.confirm": "Confirmar",
@@ -2581,7 +2581,7 @@ var es_default = {
   "up.goodsSku.buyAmount": "Cantidad"
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/i18n/locales/fr.json
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/i18n/locales/fr.json
 var fr_default = {
   "up.common.cancel": "Annuler",
   "up.common.confirm": "Confirmer",
@@ -2668,7 +2668,7 @@ var fr_default = {
   "up.goodsSku.buyAmount": "Quantité"
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/i18n/locales/de.json
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/i18n/locales/de.json
 var de_default = {
   "up.common.cancel": "Abbrechen",
   "up.common.confirm": "Bestätigen",
@@ -2755,7 +2755,7 @@ var de_default = {
   "up.goodsSku.buyAmount": "Anzahl"
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/i18n/locales/ko.json
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/i18n/locales/ko.json
 var ko_default = {
   "up.common.cancel": "취소",
   "up.common.confirm": "확인",
@@ -2842,7 +2842,7 @@ var ko_default = {
   "up.goodsSku.buyAmount": "구매 수량"
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/i18n/locales/ja.json
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/i18n/locales/ja.json
 var ja_default = {
   "up.common.cancel": "キャンセル",
   "up.common.confirm": "確認",
@@ -2929,7 +2929,7 @@ var ja_default = {
   "up.goodsSku.buyAmount": "購入数量"
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/i18n/locales/ru.json
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/i18n/locales/ru.json
 var ru_default = {
   "up.common.cancel": "Отмена",
   "up.common.confirm": "Подтвердить",
@@ -3016,7 +3016,7 @@ var ru_default = {
   "up.goodsSku.buyAmount": "Количество"
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/i18n/index.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/i18n/index.js
 var settings = {
   lang: uni.getLocale(),
   locales: {
@@ -3054,7 +3054,7 @@ var i18n_default = {
   settings
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-calendar/calendar.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-calendar/calendar.js
 var calendar_default = {
   // calendar 组件
   calendar: {
@@ -3096,7 +3096,7 @@ var calendar_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-car-keyboard/carKeyboard.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-car-keyboard/carKeyboard.js
 var carKeyboard_default = {
   // 车牌号键盘
   carKeyboard: {
@@ -3104,7 +3104,7 @@ var carKeyboard_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-card/card.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-card/card.js
 var card_default = {
   // card组件的props
   card: {
@@ -3137,7 +3137,7 @@ var card_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-cell/cell.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-cell/cell.js
 var cell_default = {
   // cell组件的props
   cell: {
@@ -3165,7 +3165,7 @@ var cell_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-cell-group/cellGroup.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-cell-group/cellGroup.js
 var cellGroup_default = {
   // cell-group组件的props
   cellGroup: {
@@ -3175,7 +3175,7 @@ var cellGroup_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-checkbox/checkbox.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-checkbox/checkbox.js
 var checkbox_default = {
   // checkbox组件
   checkbox: {
@@ -3195,7 +3195,7 @@ var checkbox_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-checkbox-group/checkboxGroup.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-checkbox-group/checkboxGroup.js
 var checkboxGroup_default = {
   // checkbox-group组件
   checkboxGroup: {
@@ -3217,7 +3217,7 @@ var checkboxGroup_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-circle-progress/circleProgress.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-circle-progress/circleProgress.js
 var circleProgress_default = {
   // circleProgress 组件
   circleProgress: {
@@ -3225,7 +3225,7 @@ var circleProgress_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-code/code.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-code/code.js
 var code_default = {
   // code 组件
   code: {
@@ -3238,7 +3238,7 @@ var code_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-code-input/codeInput.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-code-input/codeInput.js
 var codeInput_default = {
   // codeInput 组件
   codeInput: {
@@ -3260,7 +3260,7 @@ var codeInput_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-col/col.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-col/col.js
 var col_default = {
   // col 组件
   col: {
@@ -3272,7 +3272,7 @@ var col_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-collapse/collapse.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-collapse/collapse.js
 var collapse_default = {
   // collapse 组件
   collapse: {
@@ -3282,7 +3282,7 @@ var collapse_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-collapse-item/collapseItem.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-collapse-item/collapseItem.js
 var collapseItem_default = {
   // collapseItem 组件
   collapseItem: {
@@ -3306,7 +3306,7 @@ var collapseItem_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-column-notice/columnNotice.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-column-notice/columnNotice.js
 var columnNotice_default = {
   // columnNotice 组件
   columnNotice: {
@@ -3324,7 +3324,7 @@ var columnNotice_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-count-down/countDown.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-count-down/countDown.js
 var countDown_default = {
   // u-count-down 计时器组件
   countDown: {
@@ -3335,7 +3335,7 @@ var countDown_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-count-to/countTo.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-count-to/countTo.js
 var countTo_default = {
   // countTo 组件
   countTo: {
@@ -3353,7 +3353,7 @@ var countTo_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-datetime-picker/datetimePicker.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-datetime-picker/datetimePicker.js
 var datetimePicker_default = {
   // datetimePicker 组件
   datetimePicker: {
@@ -3389,7 +3389,7 @@ var datetimePicker_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-divider/divider.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-divider/divider.js
 var divider_default = {
   // divider组件
   divider: {
@@ -3404,7 +3404,7 @@ var divider_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-empty/empty.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-empty/empty.js
 var empty_default = {
   // empty组件
   empty: {
@@ -3422,7 +3422,7 @@ var empty_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-form/form.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-form/form.js
 var form_default = {
   // form 组件
   form: {
@@ -3437,7 +3437,7 @@ var form_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-form-item/formItem.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-form-item/formItem.js
 var formItem_default = {
   // formItem 组件
   formItem: {
@@ -3454,7 +3454,7 @@ var formItem_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-gap/gap.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-gap/gap.js
 var gap_default = {
   // gap组件
   gap: {
@@ -3466,7 +3466,7 @@ var gap_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-grid/grid.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-grid/grid.js
 var grid_default = {
   // grid组件
   grid: {
@@ -3476,7 +3476,7 @@ var grid_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-grid-item/gridItem.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-grid-item/gridItem.js
 var gridItem_default = {
   // grid-item组件
   gridItem: {
@@ -3485,7 +3485,7 @@ var gridItem_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-icon/icon.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-icon/icon.js
 var {
   color: color2
 } = config_default;
@@ -3512,7 +3512,7 @@ var icon_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-image/image.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-image/image.js
 var image_default = {
   // image组件
   image: {
@@ -3535,7 +3535,7 @@ var image_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-index-anchor/indexAnchor.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-index-anchor/indexAnchor.js
 var indexAnchor_default = {
   // indexAnchor 组件
   indexAnchor: {
@@ -3547,7 +3547,7 @@ var indexAnchor_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-index-list/indexList.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-index-list/indexList.js
 var indexList_default = {
   // indexList 组件
   indexList: {
@@ -3561,7 +3561,7 @@ var indexList_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-input/input.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-input/input.js
 var input_default = {
   // index 组件
   input: {
@@ -3604,7 +3604,7 @@ var input_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-keyboard/keyboard.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-keyboard/keyboard.js
 var keyboard_default = {
   // 键盘组件
   keyboard: {
@@ -3627,7 +3627,7 @@ var keyboard_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-line/line.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-line/line.js
 var line_default = {
   // line组件
   line: {
@@ -3640,7 +3640,7 @@ var line_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-line-progress/lineProgress.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-line-progress/lineProgress.js
 var lineProgress_default = {
   // lineProgress 组件
   lineProgress: {
@@ -3653,7 +3653,7 @@ var lineProgress_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-link/link.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-link/link.js
 var {
   color: color3
 } = config_default;
@@ -3670,7 +3670,7 @@ var link_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-list/list.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-list/list.js
 var list_default = {
   // list 组件
   list: {
@@ -3691,7 +3691,7 @@ var list_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-list-item/listItem.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-list-item/listItem.js
 var listItem_default = {
   // listItem 组件
   listItem: {
@@ -3699,7 +3699,7 @@ var listItem_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-loading-icon/loadingIcon.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-loading-icon/loadingIcon.js
 var {
   color: color4
 } = config_default;
@@ -3720,7 +3720,7 @@ var loadingIcon_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-loading-page/loadingPage.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-loading-page/loadingPage.js
 var loadingPage_default = {
   // loading-page组件
   loadingPage: {
@@ -3737,7 +3737,7 @@ var loadingPage_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-loadmore/loadmore.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-loadmore/loadmore.js
 var loadmore_default = {
   // loadmore 组件
   loadmore: {
@@ -3762,7 +3762,7 @@ var loadmore_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-modal/modal.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-modal/modal.js
 var modal_default = {
   // modal 组件
   modal: {
@@ -3790,7 +3790,7 @@ var modal_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-navbar/navbar.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-navbar/navbar.js
 var navbar_default = {
   // navbar 组件
   navbar: {
@@ -3814,7 +3814,7 @@ var navbar_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-no-network/noNetwork.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-no-network/noNetwork.js
 var noNetwork_default = {
   // noNetwork
   noNetwork: {
@@ -3824,7 +3824,7 @@ var noNetwork_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-notice-bar/noticeBar.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-notice-bar/noticeBar.js
 var noticeBar_default = {
   // noticeBar
   noticeBar: {
@@ -3845,7 +3845,7 @@ var noticeBar_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-notify/notify.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-notify/notify.js
 var notify_default = {
   // notify组件
   notify: {
@@ -3860,7 +3860,7 @@ var notify_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-number-box/numberBox.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-number-box/numberBox.js
 var numberBox_default = {
   // 步进器组件
   numberBox: {
@@ -3893,7 +3893,7 @@ var numberBox_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-number-keyboard/numberKeyboard.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-number-keyboard/numberKeyboard.js
 var numberKeyboard_default = {
   // 数字键盘
   numberKeyboard: {
@@ -3903,7 +3903,7 @@ var numberKeyboard_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-overlay/overlay.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-overlay/overlay.js
 var overlay_default = {
   // overlay组件
   overlay: {
@@ -3914,7 +3914,7 @@ var overlay_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-parse/parse.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-parse/parse.js
 var parse_default = {
   // parse
   parse: {
@@ -3929,7 +3929,7 @@ var parse_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-picker/picker.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-picker/picker.js
 var picker_default = {
   // picker
   picker: {
@@ -3963,7 +3963,7 @@ var picker_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-popup/popup.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-popup/popup.js
 var popup_default = {
   // popup组件
   popup: {
@@ -3989,7 +3989,7 @@ var popup_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-radio/radio.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-radio/radio.js
 var radio_default = {
   // radio组件
   radio: {
@@ -4009,7 +4009,7 @@ var radio_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-radio-group/radioGroup.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-radio-group/radioGroup.js
 var radioGroup_default = {
   // radio-group组件
   radioGroup: {
@@ -4033,7 +4033,7 @@ var radioGroup_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-rate/rate.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-rate/rate.js
 var rate_default = {
   // rate组件
   rate: {
@@ -4052,7 +4052,7 @@ var rate_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-read-more/readMore.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-read-more/readMore.js
 var readMore_default = {
   // readMore
   readMore: {
@@ -4067,7 +4067,7 @@ var readMore_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-row/row.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-row/row.js
 var row_default = {
   // row
   row: {
@@ -4077,7 +4077,7 @@ var row_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-row-notice/rowNotice.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-row-notice/rowNotice.js
 var rowNotice_default = {
   // rowNotice
   rowNotice: {
@@ -4091,7 +4091,7 @@ var rowNotice_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-scroll-list/scrollList.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-scroll-list/scrollList.js
 var scrollList_default = {
   // scrollList
   scrollList: {
@@ -4104,7 +4104,7 @@ var scrollList_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-search/search.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-search/search.js
 var search_default = {
   // search
   search: {
@@ -4137,7 +4137,7 @@ var search_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-section/section.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-section/section.js
 var section_default = {
   // u-section组件
   section: {
@@ -4154,7 +4154,7 @@ var section_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-skeleton/skeleton.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-skeleton/skeleton.js
 var skeleton_default = {
   // skeleton
   skeleton: {
@@ -4172,7 +4172,7 @@ var skeleton_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-slider/slider.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-slider/slider.js
 var slider_default = {
   // slider组件
   slider: {
@@ -4196,7 +4196,7 @@ var slider_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-status-bar/statusBar.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-status-bar/statusBar.js
 var statusBar_default = {
   // statusBar
   statusBar: {
@@ -4205,7 +4205,7 @@ var statusBar_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-steps/steps.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-steps/steps.js
 var steps_default = {
   // steps组件
   steps: {
@@ -4219,7 +4219,7 @@ var steps_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-steps-item/stepsItem.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-steps-item/stepsItem.js
 var stepsItem_default = {
   // steps-item组件
   stepsItem: {
@@ -4230,7 +4230,7 @@ var stepsItem_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-sticky/sticky.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-sticky/sticky.js
 var sticky_default = {
   // sticky组件
   sticky: {
@@ -4243,7 +4243,7 @@ var sticky_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-subsection/subsection.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-subsection/subsection.js
 var subsection_default = {
   // subsection组件
   subsection: {
@@ -4262,7 +4262,7 @@ var subsection_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-swipe-action/swipeAction.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-swipe-action/swipeAction.js
 var swipeAction_default = {
   // swipe-action组件
   swipeAction: {
@@ -4270,7 +4270,7 @@ var swipeAction_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-swipe-action-item/swipeActionItem.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-swipe-action-item/swipeActionItem.js
 var swipeActionItem_default = {
   // swipeActionItem 组件
   swipeActionItem: {
@@ -4285,7 +4285,7 @@ var swipeActionItem_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-swiper/swiper.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-swiper/swiper.js
 var swiper_default = {
   // swiper 组件
   swiper: {
@@ -4316,7 +4316,7 @@ var swiper_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-swiper-indicator/swipterIndicator.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-swiper-indicator/swipterIndicator.js
 var swipterIndicator_default = {
   // swiperIndicator 组件
   swiperIndicator: {
@@ -4328,7 +4328,7 @@ var swipterIndicator_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-switch/switch.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-switch/switch.js
 var switch_default = {
   // switch
   switch: {
@@ -4345,7 +4345,7 @@ var switch_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-tabbar/tabbar.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-tabbar/tabbar.js
 var tabbar_default = {
   // tabbar
   tabbar: {
@@ -4362,7 +4362,7 @@ var tabbar_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-tabbar-item/tabbarItem.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-tabbar-item/tabbarItem.js
 var tabbarItem_default = {
   //
   tabbarItem: {
@@ -4376,7 +4376,7 @@ var tabbarItem_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-tabs/tabs.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-tabs/tabs.js
 var tabs_default = {
   //
   tabs: {
@@ -4402,7 +4402,7 @@ var tabs_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-tag/tag.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-tag/tag.js
 var tag_default = {
   // tag 组件
   tag: {
@@ -4430,7 +4430,7 @@ var tag_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-text/text.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-text/text.js
 var text_default = {
   // text 组件
   text: {
@@ -4461,7 +4461,7 @@ var text_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-textarea/textarea.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-textarea/textarea.js
 var textarea_default = {
   // textarea 组件
   textarea: {
@@ -4490,7 +4490,7 @@ var textarea_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-toast/toast.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-toast/toast.js
 var toast_default = {
   // toast组件
   toast: {
@@ -4512,7 +4512,7 @@ var toast_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-toolbar/toolbar.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-toolbar/toolbar.js
 var toolbar_default = {
   // toolbar 组件
   toolbar: {
@@ -4525,7 +4525,7 @@ var toolbar_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-tooltip/tooltip.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-tooltip/tooltip.js
 var tooltip_default = {
   // tooltip 组件
   tooltip: {
@@ -4546,7 +4546,7 @@ var tooltip_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-transition/transition.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-transition/transition.js
 var transition_default = {
   // transition动画组件的props
   transition: {
@@ -4557,7 +4557,7 @@ var transition_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-upload/upload.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-upload/upload.js
 var upload_default = {
   // upload组件
   upload: {
@@ -4596,7 +4596,7 @@ var upload_default = {
   }
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/config/props.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/config/props.js
 var props = {
   ...actionSheet_default,
   ...album_default,
@@ -4706,13 +4706,13 @@ if (uni && uni.upuiParams) {
 }
 var props_default = props;
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/libs/function/platform.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/libs/function/platform.js
 var platform = "none";
 platform = "vue3";
 platform = "h5";
 var platform_default = platform;
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/components/u-icon/util.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/components/u-icon/util.js
 var params = {
   loaded: false
 };
@@ -4749,7 +4749,7 @@ var util_default = {
   loadFont
 };
 
-// ../../../../../../Users/miaowu/TeamMatching_Frontend/node_modules/uview-plus/index.js
+// ../../../../../Desktop/大一下/组队小程序项目/node_modules/uview-plus/index.js
 var themeType = ["primary", "success", "error", "warning", "info"];
 function setConfig2(configs) {
   function_default.shallowMerge(config_default, configs.config || {});

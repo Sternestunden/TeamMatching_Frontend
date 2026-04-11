@@ -1,0 +1,34 @@
+
+.skill-tags.data-v-04a6cf13 {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 8rpx;
+}
+.skill-chip.data-v-04a6cf13 {
+  display: flex;
+  align-items: center;
+  padding: 8rpx 20rpx;
+  border-radius: 32rpx;
+  margin-right: 12rpx;
+  margin-bottom: 12rpx;
+  background: #e6f0ff;
+  border: 2rpx solid #355ac9;
+}
+.add-btn.data-v-04a6cf13 {
+  padding: 8rpx 20rpx;
+  border-radius: 32rpx;
+  margin-right: 12rpx;
+  margin-bottom: 12rpx;
+  width: 50px;
+  border: 2rpx solid #355ac9;
+}
+.skill-text.data-v-04a6cf13 {
+  font-size: 24rpx;
+  color: #355ac9;
+}
+.del-btn.data-v-04a6cf13 {
+  font-size: 28rpx;
+  color: #355ac9;
+  margin-left: 8rpx;
+  line-height: 1;
+}

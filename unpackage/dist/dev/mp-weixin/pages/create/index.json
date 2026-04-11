@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "新建项目",
+  "usingComponents": {
+    "form-card": "../../components/FormCard"
+  }
+}
