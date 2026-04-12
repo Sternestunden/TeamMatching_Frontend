@@ -1,0 +1,72 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/login/register",
+    "pages/square/index",
+    "pages/community/index",
+    "pages/community/userprofile",
+    "pages/create/index",
+    "pages/message/index",
+    "pages/user/index",
+    "pages/index/index",
+    "pages/projectDetail/index",
+    "pages/message/invite/index",
+    "pages/message/notice/index",
+    "pages/message/invite/inviteDetail",
+    "pages/message/notice/noticeDetail",
+    "pages/message/chat/index",
+    "pages/user/profile",
+    "pages/user/info",
+    "pages/user/auth",
+    "pages/user/my-projects",
+    "pages/user/my-favorites",
+    "pages/settings/settings",
+    "pages/user/feedback"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uniapp对接Java后端",
+    "navigationBarBackgroundColor": "#f8f8f8",
+    "backgroundColor": "#f8f8f8"
+  },
+  "tabBar": {
+    "color": "#666666",
+    "selectedColor": "#007aff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "position": "bottom",
+    "list": [
+      {
+        "pagePath": "pages/square/index",
+        "text": "项目广场",
+        "iconPath": "static/icon/square.svg",
+        "selectedIconPath": "static/icon/square-a.png"
+      },
+      {
+        "pagePath": "pages/community/index",
+        "text": "公共社区",
+        "iconPath": "static/icon/community.svg",
+        "selectedIconPath": "static/icon/community-a.svg"
+      },
+      {
+        "pagePath": "pages/create/index",
+        "text": "新建项目",
+        "iconPath": "static/icon/new.svg",
+        "selectedIconPath": "static/icon/new-a.png"
+      },
+      {
+        "pagePath": "pages/message/index",
+        "text": "消息",
+        "iconPath": "static/icon/message.svg",
+        "selectedIconPath": "static/icon/message-a.svg"
+      },
+      {
+        "pagePath": "pages/user/index",
+        "text": "个人中心",
+        "iconPath": "static/icon/user.svg",
+        "selectedIconPath": "static/icon/user-a.png"
+      }
+    ]
+  },
+  "usingComponents": {}
+}

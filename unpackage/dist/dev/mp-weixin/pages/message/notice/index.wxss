@@ -1,0 +1,114 @@
+
+/* 页面容器（和邀请页一致） */
+.notice-page.data-v-25f9394e {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* 页面标题栏（和邀请页样式完全一致） */
+.page-header.data-v-25f9394e {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+}
+.back-btn.data-v-25f9394e {
+  font-size: 18px;
+  color: #333;
+}
+.header-title.data-v-25f9394e {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+.empty.data-v-25f9394e {
+  width: 18px;
+}
+
+/* 通知列表（和邀请列表样式一致） */
+.notice-list.data-v-25f9394e {
+  padding: 15px;
+}
+.notice-item.data-v-25f9394e {
+  display: flex;
+  align-items: flex-start;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+  position: relative;
+}
+
+/* 系统头像（替代用户头像） */
+.system-avatar.data-v-25f9394e {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-icon.data-v-25f9394e {
+  font-size: 20px;
+  color: #007aff;
+}
+
+/* 通知内容区（和邀请内容区样式一致） */
+.notice-content.data-v-25f9394e {
+  flex: 1;
+  margin-left: 12px;
+}
+.notice-header.data-v-25f9394e {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.notice-title.data-v-25f9394e {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+.notice-time.data-v-25f9394e {
+  font-size: 12px;
+  color: #999;
+}
+.notice-desc.data-v-25f9394e {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* 通知状态标签 */
+.notice-status.data-v-25f9394e {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.status-read.data-v-25f9394e {
+  background-color: #f5f5f5;
+  color: #999;
+}
+.status-unread.data-v-25f9394e {
+  background-color: #e8f4f8;
+  color: #007aff;
+}
+
+/* 新消息红点（样式统一） */
+.message-badge.data-v-25f9394e {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ff3333;
+  position: absolute;
+  right: 15px;
+  top: 20px;
+}

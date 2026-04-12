@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "项目广场",
+  "usingComponents": {
+    "project-card": "../../components/ProjectCard",
+    "loading": "../../components/Loading"
+  }
+}

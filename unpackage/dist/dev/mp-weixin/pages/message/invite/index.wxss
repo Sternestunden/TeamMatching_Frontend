@@ -1,0 +1,103 @@
+
+/* 页面容器 */
+.invite-page.data-v-8501fd4a {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* 页面标题栏 */
+.page-header.data-v-8501fd4a {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+}
+.back-btn.data-v-8501fd4a {
+  font-size: 18px;
+  color: #333;
+}
+.header-title.data-v-8501fd4a {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+.empty.data-v-8501fd4a {
+  width: 18px;
+}
+
+/* 邀请列表 */
+.invite-list.data-v-8501fd4a {
+  padding: 15px;
+}
+.invite-item.data-v-8501fd4a {
+  display: flex;
+  align-items: flex-start;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+  position: relative;
+}
+
+/* 邀请内容区 */
+.invite-content.data-v-8501fd4a {
+  flex: 1;
+  margin-left: 12px;
+}
+.invite-header.data-v-8501fd4a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.invite-name.data-v-8501fd4a {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+.invite-time.data-v-8501fd4a {
+  font-size: 12px;
+  color: #999;
+}
+.invite-desc.data-v-8501fd4a {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* 邀请状态标签 */
+.invite-status.data-v-8501fd4a {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.status-pending.data-v-8501fd4a {
+  background-color: #e8f4f8;
+  color: #007aff;
+}
+.status-accept.data-v-8501fd4a {
+  background-color: #e8f8e8;
+  color: #00c853;
+}
+.status-reject.data-v-8501fd4a {
+  background-color: #fef0f0;
+  color: #ff4757;
+}
+
+/* 新消息红点（和主页面样式一致） */
+.message-badge.data-v-8501fd4a {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ff3333;
+  position: absolute;
+  right: 15px;
+  top: 20px;
+}

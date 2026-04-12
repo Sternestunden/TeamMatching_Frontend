@@ -1,0 +1,1 @@
+<view class="card-wrapper data-v-931a7a4a"><view class="card-body data-v-931a7a4a"><view wx:if="{{a}}" class="card-title data-v-931a7a4a">{{b}}</view><slot/></view></view>
