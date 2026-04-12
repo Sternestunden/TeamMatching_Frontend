@@ -1,4 +1,7 @@
 // common/api/mock.js
+/** 模拟当前用户已收藏的项目 ID（与 toggle 联动） */
+const mockFavoriteProjectIds = new Set([1])
+
 const projectMockList = [
   {
     projectId: 1,
@@ -300,7 +303,14 @@ function getMyTeams() {
             unreadPost: false
           }
         ],
-        applying: [],
+        applying: [
+          {
+            projectId: 2,
+            name: "示例：申请中的项目",
+            applyTime: new Date().toISOString(),
+            status: 1
+          }
+        ],
         invited: [],
         rejected: []
       }
@@ -308,15 +318,81 @@ function getMyTeams() {
   })
 }
 
-// 项目详情模拟
-function getProjectDetail(projectId) {
-  let item = projectMockList.find(x => x.projectId == projectId);
-  return new Promise((resolve) => {
+function toProjectListItem(p) {
+  if (!p) return null
+  return {
+    projectId: p.projectId,
+    name: p.name,
+    belongTrack: p.belongTrack,
+    projectIntro: p.projectIntro,
+    publisherInfo: p.publisherInfo,
+    deadlineRecruit: p.deadlineRecruit,
+    status: p.status ?? 2,
+    viewCount: p.viewCount ?? 0,
+    favoriteCount: p.favoriteCount ?? 0,
+    isAnonymous: !!p.isAnonymous,
+    roleSummaries: Array.isArray(p.roleRequirements)
+      ? p.roleRequirements.map((r) => ({
+          role: r.role,
+          memberQuota: r.memberQuota,
+          currentMembers: r.currentMembers ?? 0
+        }))
+      : []
+  }
+}
+
+function toggleFavoriteProject(projectId) {
+  const id = Number(projectId)
+  return new Promise((resolve, reject) => {
+    if (!Number.isFinite(id)) {
+      reject({ code: 400, message: '参数错误' })
+      return
+    }
+    if (mockFavoriteProjectIds.has(id)) mockFavoriteProjectIds.delete(id)
+    else mockFavoriteProjectIds.add(id)
     resolve({
       code: 200,
-      data: item ? { ...item } : {}
-    });
-  });
+      message: 'success',
+      data: { isFavored: mockFavoriteProjectIds.has(id) }
+    })
+  })
+}
+
+function getMyFavoriteProjects(params) {
+  const page = Math.max(1, Number(params.page) || 1)
+  const size = Math.min(50, Math.max(1, Number(params.size) || 20))
+  return new Promise((resolve) => {
+    const all = projectMockList
+      .filter((p) => mockFavoriteProjectIds.has(Number(p.projectId)))
+      .map((p) => toProjectListItem(p))
+      .filter(Boolean)
+    const start = (page - 1) * size
+    const slice = all.slice(start, start + size)
+    resolve({
+      code: 200,
+      message: 'success',
+      data: slice
+    })
+  })
+}
+
+// 项目详情模拟
+function getProjectDetail(projectId) {
+  const id = Number(projectId)
+  let item = projectMockList.find((x) => x.projectId == projectId)
+  return new Promise((resolve) => {
+    if (!item) {
+      resolve({ code: 200, data: {} })
+      return
+    }
+    resolve({
+      code: 200,
+      data: {
+        ...item,
+        isFavored: mockFavoriteProjectIds.has(id)
+      }
+    })
+  })
 }
 
 function updateProject(projectId, params) {
@@ -403,6 +479,8 @@ export default {
   getUserPublishedProjects,
   getMyTeams,
   getProjectDetail,
+  toggleFavoriteProject,
+  getMyFavoriteProjects,
   updateProject,
   applyProject,
   getMyTalentCard,

@@ -3,21 +3,38 @@
 
     <!-- 页面内容区（给 NavBar 和底部按钮留空间） -->
     <view class="detail-content">
+      <view class="detail-toolbar">
+        <view class="toolbar-spacer"></view>
+        <view
+          class="fav-btn"
+          :class="{ active: isFavored, disabled: favoriteLoading }"
+          @tap="onToggleFavorite"
+        >
+          <text class="fav-icon">{{ isFavored ? '★' : '☆' }}</text>
+          <text class="fav-text">{{ favoriteLoading ? '…' : (isFavored ? '已收藏' : '收藏') }}</text>
+        </view>
+      </view>
+
       <!-- 第二行：项目名称（黑体粗字） -->
       <view class="project-title">
         <text>{{ project.name }}</text>
       </view>
 
-      <!-- 第三行：项目要求 + 项目类型（灰色 Tag） -->
-      <view class="project-tags">
-        <view class="tag-item">
-          <text class="tag-icon">💼</text>
-          <text class="tag-text">{{ project.require }}</text>
-        </view>
-        <view class="tag-item">
-          <text class="tag-icon">🎒</text>
-          <text class="tag-text">{{ project.type }}</text>
-        </view>
+      <!-- 状态 + 与创建表单一致的维度标签 -->
+      <view v-if="project.statusLabel" class="status-strip">
+        <text class="status-pill">{{ project.statusLabel }}</text>
+      </view>
+      <view class="chip-row">
+        <text v-if="project.belongTrack" class="chip">{{ project.belongTrack }}</text>
+        <text v-if="project.projectType" class="chip chip-muted">{{ project.projectType }}</text>
+        <text v-if="project.levelLabel" class="chip chip-muted">{{ project.levelLabel }}</text>
+        <text class="chip chip-muted">{{ project.allowCrossMajor ? '允许跨专业' : '不允许跨专业' }}</text>
+      </view>
+      <view v-if="project.deadlineText || project.releaseText || projectStatLine" class="meta-line">
+        <text v-if="project.deadlineText" class="meta-item">招募截止：{{ project.deadlineText }}</text>
+        <text v-if="project.releaseText" class="meta-item">发布：{{ project.releaseText }}</text>
+        <text v-if="project.auditLabel" class="meta-item">审核：{{ project.auditLabel }}</text>
+        <text v-if="projectStatLine" class="meta-item">{{ projectStatLine }}</text>
       </view>
 
       <!-- 第四行：发布人（匿名时不展示真实身份，不跳转个人页） -->
@@ -27,24 +44,82 @@
         <text v-if="!project.isAnonymous" class="arrow">></text>
       </view>
       <view v-if="project.isAnonymous && project.contactInfo" class="anon-contact">
-        <text class="anon-contact-label">联系方式</text>
+        <text class="anon-contact-label">联系方式（匿名发布）</text>
         <text class="anon-contact-text">{{ project.contactInfo }}</text>
       </view>
 
-      <!-- 第五行及以后：项目详情 -->
-      <view class="project-detail">
-        <text class="detail-title">项目详情</text>
-        <text class="detail-content-text">{{ project.detail }}</text>
+      <view v-if="project.projectFeatures" class="detail-section">
+        <view class="detail-section-header">
+          <view class="detail-section-accent"></view>
+          <view class="detail-section-heading">
+            <text class="detail-section-title">项目亮点</text>
+            <text class="detail-section-hint">核心特色与差异化</text>
+          </view>
+        </view>
+        <view class="detail-section-panel">
+          <view
+            v-for="(line, i) in featuresParagraphs"
+            :key="'feat-' + i"
+            :class="['detail-para', !line ? 'detail-para--blank' : '']"
+          >{{ line }}</view>
+        </view>
+      </view>
+
+      <view v-if="project.tagList && project.tagList.length" class="detail-section detail-section--tags">
+        <view class="detail-section-header">
+          <view class="detail-section-accent"></view>
+          <view class="detail-section-heading">
+            <text class="detail-section-title">标签</text>
+            <text class="detail-section-hint">技能与方向关键词</text>
+          </view>
+        </view>
+        <view class="detail-section-panel detail-section-panel--tags">
+          <view class="tag-chips">
+            <text v-for="(t, ti) in project.tagList" :key="ti" class="tag-chip">{{ t }}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="detail-section">
+        <view class="detail-section-header">
+          <view class="detail-section-accent"></view>
+          <view class="detail-section-heading">
+            <text class="detail-section-title">项目介绍</text>
+            <text class="detail-section-hint">背景、目标与具体说明</text>
+          </view>
+        </view>
+        <view class="detail-section-panel">
+          <view
+            v-for="(line, i) in detailParagraphs"
+            :key="'intro-' + i"
+            :class="['detail-para', !line ? 'detail-para--blank' : '']"
+          >{{ line }}</view>
+        </view>
       </view>
 
       <view v-if="project.roles && project.roles.length" class="role-section">
-        <text class="detail-title">招募角色</text>
-        <view v-for="(r, idx) in project.roles" :key="idx" class="role-block">
-          <view class="role-line">
-            <text class="role-name">{{ r.role }}</text>
-            <text class="role-quota">招 {{ r.memberQuota }} 人</text>
+        <view class="detail-section-header role-section-header">
+          <view class="detail-section-accent"></view>
+          <view class="detail-section-heading">
+            <text class="detail-section-title">招募角色</text>
+            <text class="detail-section-hint">岗位、人数与具体要求</text>
           </view>
-          <text v-if="r.recruitRequirements" class="role-req-text">{{ r.recruitRequirements }}</text>
+        </view>
+        <view class="detail-section-panel detail-section-panel--roles">
+          <view v-for="(r, idx) in project.roles" :key="idx" class="role-block">
+            <view class="role-line">
+              <text class="role-name">{{ r.role }}</text>
+              <text class="role-quota">名额 {{ r.memberQuota }} · 已加入 {{ r.currentMembers != null ? r.currentMembers : 0 }}</text>
+            </view>
+            <view v-if="r.recruitRequirements" class="role-req-wrap">
+              <text class="role-req-label">具体要求</text>
+              <view
+                v-for="(reqLine, ri) in roleReqLines(r.recruitRequirements)"
+                :key="ri"
+                :class="['role-req-para', !reqLine ? 'role-req-para--blank' : '']"
+              >{{ reqLine }}</view>
+            </view>
+          </view>
         </view>
       </view>
     </view>
@@ -132,6 +207,14 @@ import api from '@/common/api/index.js'
 
 export default {
   computed: {
+    projectStatLine() {
+      const p = this.project
+      const parts = []
+      if (p.viewCount != null && p.viewCount !== '') parts.push(`浏览 ${p.viewCount}`)
+      if (p.applyCount != null && p.applyCount !== '') parts.push(`申请 ${p.applyCount}`)
+      if (p.favoriteCount != null && p.favoriteCount !== '') parts.push(`收藏 ${p.favoriteCount}`)
+      return parts.length ? parts.join(' · ') : ''
+    },
     roleOptionLabels() {
       const roles = Array.isArray(this.project.roles) ? this.project.roles : []
       return roles.map((r, idx) => `${r.role || `角色${idx + 1}`}（剩余${this.calcRemainQuota(r)}）`)
@@ -141,6 +224,17 @@ export default {
         return `当前可复用：${this.profileResume.fileName || '个人简历'}`
       }
       return '个人主页暂无可复用简历，可改为“上传投递简历”'
+    },
+    /** 按换行分段，小程序里 <text> 的 pre-wrap 不稳定，用块级更可靠 */
+    detailParagraphs() {
+      const raw = this.project.detail == null ? '' : String(this.project.detail)
+      if (!raw.trim()) return ['暂无介绍']
+      return raw.split(/\r?\n/)
+    },
+    featuresParagraphs() {
+      const raw = this.project.projectFeatures == null ? '' : String(this.project.projectFeatures)
+      if (!raw.trim()) return []
+      return raw.split(/\r?\n/)
     }
   },
   data() {
@@ -148,12 +242,28 @@ export default {
       projectId: '',
       /** 从「我发起的项目」进入时为 true，不展示「立即沟通」 */
       hideCommunicate: false,
-      isCollected: false,
+      /** 与 POST /favorite/project/{id} 返回的 data.isFavored 一致 */
+      isFavored: false,
+      favoriteLoading: false,
       project: {
         id: '',
         name: '',
-        require: '',
-        type: '',
+        belongTrack: '',
+        projectType: '',
+        level: null,
+        levelLabel: '',
+        allowCrossMajor: false,
+        projectFeatures: '',
+        tags: '',
+        tagList: [],
+        deadlineText: '',
+        releaseText: '',
+        status: null,
+        statusLabel: '',
+        viewCount: null,
+        applyCount: null,
+        favoriteCount: null,
+        auditLabel: '',
         leaderAvatar: '',
         leaderName: '',
         publisherUserId: '',
@@ -195,6 +305,39 @@ export default {
     }
   },
   methods: {
+    levelLabel(level) {
+      const n = Number(level)
+      const m = { 1: '校级', 2: '省级', 3: '国家级' }
+      return m[n] != null ? m[n] : ''
+    },
+    projectStatusLabel(status) {
+      const n = Number(status)
+      const m = { 0: '草拟', 1: '实施中', 2: '招募中', 3: '已完成', 4: '已终止' }
+      return m[n] != null ? m[n] : ''
+    },
+    auditStatusLabel(auditStatus) {
+      if (auditStatus === undefined || auditStatus === null || auditStatus === '') return ''
+      const n = Number(auditStatus)
+      const m = { 0: '待审核', 1: '审核已通过', 2: '审核未通过' }
+      return m[n] != null ? m[n] : ''
+    },
+    formatDetailDateTime(iso) {
+      if (iso == null || iso === '') return ''
+      const d = new Date(iso)
+      if (Number.isNaN(d.getTime())) {
+        const s = String(iso)
+        return s.length >= 16 ? s.slice(0, 16).replace('T', ' ') : s
+      }
+      const y = d.getFullYear()
+      const m = `${d.getMonth() + 1}`.padStart(2, '0')
+      const day = `${d.getDate()}`.padStart(2, '0')
+      const hh = `${d.getHours()}`.padStart(2, '0')
+      const mm = `${d.getMinutes()}`.padStart(2, '0')
+      return `${y}-${m}-${day} ${hh}:${mm}`
+    },
+    roleReqLines(text) {
+      return String(text || '').split(/\r?\n/)
+    },
     async getProjectDetailFromApi() {
       try {
         const res = await api.getProjectDetail(this.projectId)
@@ -209,11 +352,38 @@ export default {
           data.isAnonymous === 1 ||
           data.isAnonymous === '1' ||
           data.isAnonymous === 'true'
+        const tagsRaw = data.tags != null ? String(data.tags) : ''
+        const tagList = tagsRaw
+          .split(/[,，、]/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+        const favored =
+          data.isFavored === true ||
+          data.isFavored === 1 ||
+          data.isFavored === '1' ||
+          data.isFavored === 'true' ||
+          data.isFavorite === true ||
+          data.favored === true
+        this.isFavored = !!favored
         this.project = {
           id: data.projectId,
           name: data.name || '',
-          require: data.allowCrossMajor ? '允许跨专业' : '不允许跨专业',
-          type: data.belongTrack || data.projectType || '',
+          belongTrack: data.belongTrack || '',
+          projectType: data.projectType || '',
+          level: data.level != null ? Number(data.level) : null,
+          levelLabel: this.levelLabel(data.level),
+          allowCrossMajor: !!data.allowCrossMajor,
+          projectFeatures: data.projectFeatures != null ? String(data.projectFeatures) : '',
+          tags: tagsRaw,
+          tagList,
+          deadlineText: this.formatDetailDateTime(data.deadlineRecruit),
+          releaseText: this.formatDetailDateTime(data.releaseTime),
+          status: data.status != null ? Number(data.status) : null,
+          statusLabel: this.projectStatusLabel(data.status),
+          viewCount: data.viewCount,
+          applyCount: data.applyCount,
+          favoriteCount: data.favoriteCount,
+          auditLabel: this.auditStatusLabel(data.auditStatus),
           leaderAvatar: anon ? '' : (pub.avatar || ''),
           leaderName: anon ? '匿名用户' : (pub.nickname || '发布者'),
           publisherUserId: anon ? '' : String(pub.userId || ''),
@@ -228,14 +398,32 @@ export default {
       }
     },
 
-    // 切换收藏状态
-    toggleCollect() {
-      this.isCollected = !this.isCollected;
-      uni.showToast({
-        title: this.isCollected ? '收藏成功' : '取消收藏',
-        icon: 'none'
-      });
-      // 真实项目：调用接口更新收藏状态
+    async onToggleFavorite() {
+      if (!this.projectId || this.favoriteLoading) return
+      const token = uni.getStorageSync('access-token')
+      if (!token) {
+        uni.showToast({ title: '请先登录', icon: 'none' })
+        setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 300)
+        return
+      }
+      this.favoriteLoading = true
+      const wasFavored = this.isFavored
+      try {
+        const res = await api.toggleFavoriteProject(this.projectId)
+        const next = res?.data?.isFavored
+        this.isFavored = next === true || next === 1 || next === '1' || next === 'true'
+        uni.showToast({ title: this.isFavored ? '已收藏' : '已取消收藏', icon: 'none' })
+        const fc = Number(this.project.favoriteCount)
+        if (Number.isFinite(fc)) {
+          if (!wasFavored && this.isFavored) this.project.favoriteCount = fc + 1
+          else if (wasFavored && !this.isFavored) this.project.favoriteCount = Math.max(0, fc - 1)
+        }
+      } catch (e) {
+        console.error(e)
+        uni.showToast({ title: e?.data?.message || e?.message || '操作失败', icon: 'none' })
+      } finally {
+        this.favoriteLoading = false
+      }
     },
     // 跳转到队长个人页
     goToLeaderPage() {
@@ -468,6 +656,52 @@ export default {
 /* 内容区 */
 .detail-content {
   padding: 15px 20px;
+  position: relative;
+}
+
+.detail-toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  margin: -4px 0 12px;
+}
+.toolbar-spacer {
+  flex: 1;
+}
+.fav-btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+.fav-btn.active {
+  border-color: #f0b429;
+  background: linear-gradient(180deg, #fffdf5 0%, #fff8e6 100%);
+}
+.fav-btn.disabled {
+  opacity: 0.55;
+}
+.fav-icon {
+  font-size: 18px;
+  color: #f0b429;
+  line-height: 1;
+}
+.fav-btn.active .fav-icon {
+  color: #e6a800;
+}
+.fav-text {
+  font-size: 14px;
+  color: #475569;
+  font-weight: 500;
+}
+.fav-btn.active .fav-text {
+  color: #92400e;
 }
 
 /* 第二行：项目名称（黑体粗字） */
@@ -478,24 +712,59 @@ export default {
   margin-bottom: 15px;
 }
 
-/* 第三行：项目 Tag */
-.project-tags {
+.status-strip {
+  margin-bottom: 10px;
+}
+.status-pill {
+  display: inline-block;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e8f0ff;
+  color: #355ac9;
+}
+.chip-row {
   display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
 }
-.tag-item {
+.chip {
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #f0f4ff;
+  color: #355ac9;
+}
+.chip-muted {
+  background: #f5f5f7;
+  color: #555;
+}
+.meta-line {
   display: flex;
-  align-items: center;
-  gap: 5px;
-  color: #666;
-  font-size: 14px;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
 }
-.tag-icon {
-  font-size: 16px;
+.meta-item {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.45;
 }
-.tag-text {
-  color: #666;
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tag-chip {
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #355ac9;
+  border: 1px solid #d8def8;
 }
 
 /* 第四行：队长信息 */
@@ -533,25 +802,88 @@ export default {
   margin-bottom: 6px;
 }
 .anon-contact-text {
-  font-size: 14px;
+  font-size: 15px;
   color: #333;
-  line-height: 1.5;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-/* 项目详情 */
-.project-detail {
-  margin-top: 20px;
+/* 区块：标题区（色条+大标题+灰副标题）与正文区（白底+灰字+大行距）明确分离 */
+.detail-section {
+  margin-top: 28px;
 }
-.detail-title {
-  font-size: 20px;
-  font-weight: bold;
-  color: #000;
+.detail-section--tags {
+  margin-top: 24px;
+}
+.detail-section-header {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
   margin-bottom: 12px;
 }
-.detail-content-text {
-  font-size: 14px;
-  color: #333;
-  line-height: 1.6;
+.detail-section-accent {
+  width: 4px;
+  min-height: 44px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #355ac9 0%, #5b7ee8 100%);
+  flex-shrink: 0;
+}
+.detail-section-heading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 2px 0 4px;
+}
+.detail-section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+}
+.detail-section-hint {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.detail-section-panel {
+  margin-left: 16px;
+  padding: 18px 16px 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+}
+.detail-section-panel--tags {
+  padding-bottom: 16px;
+}
+.detail-section-panel--roles {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+.detail-para {
+  font-size: 15px;
+  font-weight: 400;
+  color: #475569;
+  line-height: 2;
+  letter-spacing: 0.02em;
+  margin-bottom: 16px;
+  word-break: break-word;
+}
+.detail-para:last-child {
+  margin-bottom: 0;
+}
+.detail-para--blank {
+  min-height: 12px;
+  margin-bottom: 8px;
+}
+.role-section-header {
+  margin-bottom: 12px;
 }
 
 /* 底部固定按钮 */
@@ -579,35 +911,66 @@ export default {
 }
 
 .role-section {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: 28px;
 }
 .role-block {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 8px;
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #eef2f7;
+}
+.role-block:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
 }
 .role-line {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 .role-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #000;
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  flex: 1;
 }
 .role-quota {
-  font-size: 13px;
-  color: #666;
+  font-size: 12px;
+  color: #64748b;
+  flex-shrink: 0;
+  margin-top: 3px;
 }
-.role-req-text {
-  font-size: 13px;
-  color: #555;
-  line-height: 1.5;
+.role-req-wrap {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e8edf5;
+}
+.role-req-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #355ac9;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.role-req-para {
+  display: block;
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.9;
+  margin-bottom: 10px;
+  word-break: break-word;
+}
+.role-req-para:last-child {
+  margin-bottom: 0;
+}
+.role-req-para--blank {
+  min-height: 8px;
+  margin-bottom: 6px;
 }
 
 .apply-mask {

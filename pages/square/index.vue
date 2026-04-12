@@ -3,8 +3,9 @@
     <view class="filter-header">
       <view class="filter-row1">
         <view class="sort-filter">
-          <text class="sort-item" :class="{ active: currentSort === 'recommend' }" @click="changeSort('recommend')">推荐</text>
           <text class="sort-item" :class="{ active: currentSort === 'latest' }" @click="changeSort('latest')">最新</text>
+          <text class="sort-item" :class="{ active: currentSort === 'hot' }" @click="changeSort('hot')">最热</text>
+          <text class="sort-item" :class="{ active: currentSort === 'deadline' }" @click="changeSort('deadline')">截止最近</text>
         </view>
         <view class="search-bar">
           <input class="search-input" type="text" placeholder="搜索项目/关键词" v-model="searchKeyword" @confirm="handleSearch" />
@@ -135,7 +136,8 @@ export default {
     return {
       isNavigating: false,
       loading: false,
-      currentSort: "recommend",
+      // 与接口 GET /project/list 的 sort 一致：latest | hot | deadline
+      currentSort: "latest",
       currentCategory: "all",
       searchKeyword: "",
       showFilter: false,
@@ -217,14 +219,9 @@ export default {
         );
       }
 
-      // 排序
-      if (this.currentSort === "latest") {
-        result.sort((a, b) => new Date(b.submitTime) - new Date(a.submitTime));
-      } else {
-        result.sort(() => Math.random() - 0.5);
-      }
-      
-      console.log("最终要渲染的数据：", result); 
+      // 列表顺序由接口 sort 决定，此处仅做筛选映射，避免与后端排序冲突
+
+      console.log("最终要渲染的数据：", result);
       return result;
     }
   },
@@ -285,8 +282,10 @@ export default {
     },
 
     buildProjectListQuery() {
+      const SORT_API = ['latest', 'hot', 'deadline']
+      const sort = SORT_API.includes(this.currentSort) ? this.currentSort : 'latest'
       const params = {
-        sort: this.currentSort,
+        sort,
         keyword: this.searchKeyword,
         page: this.currentPage || 1,
         size: 10
@@ -434,10 +433,16 @@ export default {
   display: flex; justify-content: space-between; align-items: center;
 }
 .sort-filter {
-  display: flex; gap: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  max-width: 52%;
 }
 .sort-item {
-  font-size: 16px; color: #666;
+  font-size: 14px;
+  color: #666;
+  white-space: nowrap;
 }
 .sort-item.active {
   color: #007aff; font-weight: bold; border-bottom: 2px solid #007aff;

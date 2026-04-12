@@ -1545,6 +1545,10 @@ paths:
                           applyCount:
                             type: integer
                             example: 8
+                          isFavored:
+                            type: boolean
+                            description: 当前登录用户是否已收藏该项目（未登录时可省略）
+                            example: false
                           releaseTime:
                             type: string
                             format: date-time
@@ -1902,6 +1906,48 @@ paths:
                             description: 当前操作后的状态：true-已收藏 false-未收藏
                             example: true
           headers: {}
+      security:
+        - token: []
+  /favorite/project/list:
+    get:
+      summary: 分页获取我收藏的项目
+      deprecated: false
+      description: 当前登录用户收藏的项目卡片列表（与项目广场列表项结构一致，便于前端复用）
+      operationId: getMyFavoriteProjects
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProjectListItem'
       security:
         - token: []
   /follow/{userId}:

@@ -204,6 +204,29 @@ const api = {
     })
   },
 
+  /**
+   * 收藏/取消收藏（切换）文档：POST /favorite/project/{projectId} → data.isFavored
+   * 我的收藏列表：文档未单独列出路径，与常见后端约定一致使用 GET /favorite/project/list
+   */
+  toggleFavoriteProject(projectId) {
+    if (config.useMock) {
+      return mockApi.toggleFavoriteProject(projectId)
+    }
+    return uni.$u.http.post(`/favorite/project/${projectId}`, {}, {
+      custom: { auth: true, catch: true }
+    })
+  },
+
+  getMyFavoriteProjects(params = {}) {
+    if (config.useMock) {
+      return mockApi.getMyFavoriteProjects(params)
+    }
+    return uni.$u.http.get('/favorite/project/list', {
+      params: { page: params.page || 1, size: params.size || 20 },
+      custom: { auth: true, catch: true }
+    })
+  },
+
   // 更新项目（我发布的项目编辑）
   updateProject(projectId, params) {
     if (config.useMock) {
