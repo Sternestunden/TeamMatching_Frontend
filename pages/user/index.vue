@@ -27,13 +27,16 @@
           <text class="item-arrow">›</text>
         </view>
         <view class="list-item" @tap="goMyProjects('joined')">
-          <view class="item-left">
+          <view class="item-left item-left-stack">
             <view class="item-icon-circle">
-              <text class="item-icon-text">加</text>
+              <text class="item-icon-text">队</text>
             </view>
-            <text class="item-text">我加入的项目</text>
+            <view class="item-text-block">
+              <text class="item-text">申请与团队</text>
+              <text class="item-sub">沟通中、在队与邀请</text>
+            </view>
           </view>
-          <text class="item-arrow">›</text> 
+          <text class="item-arrow">›</text>
         </view>
         <view class="list-item" @tap="goMyProjects('draft')">
           <view class="item-left">
@@ -44,15 +47,39 @@
           </view>
           <text class="item-arrow">›</text>
         </view>
+        <view class="divider"></view>
+        <view class="list-item" @tap="goMyFavorites">
+          <view class="item-left">
+            <view class="item-icon-circle">
+              <text class="item-icon-text">藏</text>
+            </view>
+            <text class="item-text">我的收藏</text>
+          </view>
+          <text class="item-arrow">›</text>
+        </view>
+        <view class="divider"></view>
+        <view class="list-item" @tap="goMyResume">
+          <view class="item-left item-left-stack">
+            <view class="item-icon-circle">
+              <text class="item-icon-text">简</text>
+            </view>
+            <view class="item-text-block">
+              <text class="item-text">我的简历</text>
+              <text class="item-sub">上传与管理附件，投递时可复用</text>
+            </view>
+          </view>
+          <text class="item-arrow">›</text>
+        </view>
       </view>
     </view>
 
-    <!-- 我的简历 / 技能树 -->
     <SkillTags
+      title="技能标签"
       :skills="skills"
       @add="openSkillModal"
       @view="onViewSkill"
-      @delete="onDeleteSkill" ></SkillTags>
+      @delete="onDeleteSkill"
+    />
 
     <!-- 系统设置 / 反馈建议 -->
     <view class="card section-card">
@@ -132,6 +159,7 @@
 import UserInfo from '../../components/user/UserInfo.vue'
 import SkillTags from '../../components/user/SkillTags.vue'
 import api from '@/common/api/index.js'
+import { scheduleRelogin, shouldTriggerReloginFromError } from '@/common/http/authRedirect.js'
 
 export default {
   components: {
@@ -140,16 +168,14 @@ export default {
   },
   data() {
     return {
+      // 不用写死「演示用户」：未登录/会话失效时应为空，避免被误认为 mock
       userInfo: {
-        name: '王小明',
-        grade: '25级',
-        college: '软件工程学院'
+        name: '',
+        grade: '',
+        college: '',
+        avatarUrl: ''
       },
-      skills: [
-            { name: 'Python', exp: '做过数据分析项目' },
-            { name: 'Vue.js', exp: '开发过校园小程序' },
-            { name: 'Rust', exp: '学习操作系统' }
-          ],
+      skills: [],
       showSkillModal: false,
       skillForm: {
         stack: '',
@@ -157,23 +183,47 @@ export default {
       }
     }
   },
+
   async onShow() {
     const token = uni.getStorageSync('access-token')
-    if (!token) return
+    if (!token) {
+      this.applyGuestState()
+      return
+    }
+    const cached = uni.getStorageSync('userInfo')
+    if (cached && typeof cached === 'object') {
+      this.applyProfileToView(cached)
+    }
     try {
       const res = await api.getUserProfile()
       if (res?.data) {
         uni.setStorageSync('userInfo', res.data)
-        this.userInfo = {
-          name: res.data.nickname || res.data.username || '未命名用户',
-          grade: res.data.grade || '',
-          college: res.data.major || '',
-          avatarUrl: res.data.avatarFile?.fileUrl || ''
-        }
+        this.applyProfileToView(res.data)
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('个人中心拉取用户信息失败', e)
+      this.applyGuestState()
+      // 拦截器通常会处理 401；此处兜底（例如异常响应结构、或拦截器未走到）
+      if (shouldTriggerReloginFromError(e)) {
+        scheduleRelogin({ url: '/user/profile' }, e?.message || e?.data?.message)
+      }
+    }
   },
   methods: {
+    applyGuestState() {
+      this.userInfo = { name: '', grade: '', college: '', avatarUrl: '' }
+      this.skills = []
+    },
+
+    applyProfileToView(data) {
+      if (!data) return
+      this.userInfo = {
+        name: data.nickname || data.username || '未命名用户',
+        grade: data.grade || '',
+        college: data.major || '',
+        avatarUrl: data.avatarFile?.fileUrl || ''
+      }
+    },
     onUploadAvatar() {
       const token = uni.getStorageSync('access-token')
       if (!token) {
@@ -203,12 +253,9 @@ export default {
             const res = await api.getUserProfile()
             if (res?.data) {
               uni.setStorageSync('userInfo', res.data)
-              this.userInfo = {
-                ...this.userInfo,
-                name: res.data.nickname || res.data.username || this.userInfo.name,
-                grade: res.data.grade || this.userInfo.grade,
-                college: res.data.major || this.userInfo.college,
-                avatarUrl: res.data.avatarFile?.fileUrl || file.fileUrl || this.userInfo.avatarUrl
+              this.applyProfileToView(res.data)
+              if (file.fileUrl && !this.userInfo.avatarUrl) {
+                this.userInfo = { ...this.userInfo, avatarUrl: file.fileUrl }
               }
             } else {
               this.userInfo = { ...this.userInfo, avatarUrl: file.fileUrl || this.userInfo.avatarUrl }
@@ -270,6 +317,22 @@ export default {
     goMyProjects(type) {
       uni.navigateTo({
         url: `/pages/user/my-projects?type=${type}`
+      })
+    },
+    goMyFavorites() {
+      uni.navigateTo({
+        url: '/pages/user/my-favorites'
+      })
+    },
+    goMyResume() {
+      const token = uni.getStorageSync('access-token')
+      if (!token) {
+        uni.showToast({ title: '请先登录', icon: 'none' })
+        setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 300)
+        return
+      }
+      uni.navigateTo({
+        url: '/pages/user/resume'
       })
     },
     goSettings() {
@@ -455,6 +518,22 @@ export default {
 .item-left {
   display: flex;
   align-items: center;
+}
+
+.item-left-stack {
+  align-items: flex-start;
+}
+
+.item-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.item-sub {
+  font-size: 22rpx;
+  color: #999;
+  line-height: 1.35;
 }
 
 .item-icon-circle {

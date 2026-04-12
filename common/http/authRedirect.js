@@ -16,6 +16,14 @@ export function isUnauthorizedCode(code) {
   return n === 401
 }
 
+/** 页面 / 非 http 封装处兜底：兼容 luch-request reject 的 response 或业务 { code } */
+export function shouldTriggerReloginFromError(err) {
+  if (!err) return false
+  if (err.statusCode === 401) return true
+  const c = err.code ?? err.data?.code
+  return isUnauthorizedCode(c)
+}
+
 /**
  * @param {object} [config] luch-request 的 config，用于排除登录/注册等公开接口
  * @param {string} [message] 提示文案

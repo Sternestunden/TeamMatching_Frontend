@@ -1,4 +1,11 @@
 // common/api/mock.js
+/** 模拟当前用户已收藏的项目 ID（与 toggle 联动） */
+const mockFavoriteProjectIds = new Set([1])
+
+/** 模拟用户简历文件列表（targetType=1），与 getMyUploadedFiles / upload 联动 */
+let mockResumeNextId = 91001
+const mockUserResumeFiles = []
+
 const projectMockList = [
   {
     projectId: 1,
@@ -158,20 +165,81 @@ function submitAuth(params) {
 }
 
 function uploadFile(params) {
+  const tt = Number(params?.targetType || 0)
+  const path = String(params?.filePath || 'upload.bin')
+  const baseName = path.split('/').pop().split('?')[0] || 'upload.bin'
   return new Promise((resolve) => {
+    if (tt === 1) {
+      const fileId = mockResumeNextId++
+      const ext = (baseName.includes('.') ? baseName.split('.').pop() : 'pdf') || 'pdf'
+      const row = {
+        fileId,
+        fileName: baseName,
+        fileUrl: `https://example.com/files/resume-${fileId}.${ext}`,
+        fileSize: 204800,
+        fileType: 'application/pdf',
+        fileExtension: String(ext).slice(0, 12),
+        md5Hash: 'd41d8cd98f00b204e9800998ecf8427e',
+        targetType: 1,
+        createdTime: new Date().toISOString()
+      }
+      mockUserResumeFiles.unshift(row)
+      resolve({ code: 200, message: 'success', data: { ...row } })
+      return
+    }
     resolve({
       code: 200,
-      message: "success",
+      message: 'success',
       data: {
         fileId: 10001,
-        fileName: "mock_upload.jpg",
-        fileUrl: "https://example.com/files/mock_upload.jpg",
+        fileName: 'mock_upload.jpg',
+        fileUrl: 'https://example.com/files/mock_upload.jpg',
         fileSize: 1,
-        fileType: "image/jpeg",
-        fileExtension: "jpg",
-        md5Hash: "d41d8cd98f00b204e9800998ecf8427e"
+        fileType: 'image/jpeg',
+        fileExtension: 'jpg',
+        md5Hash: 'd41d8cd98f00b204e9800998ecf8427e'
       }
     })
+  })
+}
+
+function getMyUploadedFiles(params) {
+  const targetType = Number(params?.targetType ?? 1)
+  const page = Math.max(1, Number(params?.page) || 1)
+  const size = Math.min(50, Math.max(1, Number(params?.size) || 20))
+  return new Promise((resolve) => {
+    const pool = targetType === 1 ? mockUserResumeFiles : []
+    const start = (page - 1) * size
+    resolve({
+      code: 200,
+      message: 'success',
+      data: pool.slice(start, start + size)
+    })
+  })
+}
+
+function getFileInfo(fileId) {
+  const id = Number(fileId)
+  return new Promise((resolve, reject) => {
+    const row = mockUserResumeFiles.find((x) => Number(x.fileId) === id)
+    if (!row) {
+      reject({ code: 404, message: '文件不存在' })
+      return
+    }
+    resolve({ code: 200, message: 'success', data: { ...row } })
+  })
+}
+
+function deleteFile(fileId) {
+  const id = Number(fileId)
+  return new Promise((resolve, reject) => {
+    const idx = mockUserResumeFiles.findIndex((x) => Number(x.fileId) === id)
+    if (idx < 0) {
+      reject({ code: 404, message: '文件不存在' })
+      return
+    }
+    mockUserResumeFiles.splice(idx, 1)
+    resolve({ code: 200, message: 'success', data: { message: '文件已删除' } })
   })
 }
 
@@ -227,14 +295,18 @@ function createProject(params) {
   })
 }
 
-// 项目列表模拟
+// 项目列表模拟（支持 page / size 分页，便于联调触底加载）
 function getProjectList(params) {
+  const page = Math.max(1, Number(params?.page) || 1)
+  const size = Math.min(50, Math.max(1, Number(params?.size) || 10))
+  const start = (page - 1) * size
   return new Promise((resolve) => {
+    const slice = projectMockList.slice(start, start + size)
     resolve({
       code: 200,
-      data: projectMockList
-    });
-  });
+      data: slice
+    })
+  })
 }
 
 // 我发起的项目（简单用现有列表模拟）
@@ -300,7 +372,14 @@ function getMyTeams() {
             unreadPost: false
           }
         ],
-        applying: [],
+        applying: [
+          {
+            projectId: 2,
+            name: "示例：申请中的项目",
+            applyTime: new Date().toISOString(),
+            status: 1
+          }
+        ],
         invited: [],
         rejected: []
       }
@@ -308,15 +387,81 @@ function getMyTeams() {
   })
 }
 
-// 项目详情模拟
-function getProjectDetail(projectId) {
-  let item = projectMockList.find(x => x.projectId == projectId);
-  return new Promise((resolve) => {
+function toProjectListItem(p) {
+  if (!p) return null
+  return {
+    projectId: p.projectId,
+    name: p.name,
+    belongTrack: p.belongTrack,
+    projectIntro: p.projectIntro,
+    publisherInfo: p.publisherInfo,
+    deadlineRecruit: p.deadlineRecruit,
+    status: p.status ?? 2,
+    viewCount: p.viewCount ?? 0,
+    favoriteCount: p.favoriteCount ?? 0,
+    isAnonymous: !!p.isAnonymous,
+    roleSummaries: Array.isArray(p.roleRequirements)
+      ? p.roleRequirements.map((r) => ({
+          role: r.role,
+          memberQuota: r.memberQuota,
+          currentMembers: r.currentMembers ?? 0
+        }))
+      : []
+  }
+}
+
+function toggleFavoriteProject(projectId) {
+  const id = Number(projectId)
+  return new Promise((resolve, reject) => {
+    if (!Number.isFinite(id)) {
+      reject({ code: 400, message: '参数错误' })
+      return
+    }
+    if (mockFavoriteProjectIds.has(id)) mockFavoriteProjectIds.delete(id)
+    else mockFavoriteProjectIds.add(id)
     resolve({
       code: 200,
-      data: item ? { ...item } : {}
-    });
-  });
+      message: 'success',
+      data: { isFavored: mockFavoriteProjectIds.has(id) }
+    })
+  })
+}
+
+function getMyFavoriteProjects(params) {
+  const page = Math.max(1, Number(params.page) || 1)
+  const size = Math.min(50, Math.max(1, Number(params.size) || 20))
+  return new Promise((resolve) => {
+    const all = projectMockList
+      .filter((p) => mockFavoriteProjectIds.has(Number(p.projectId)))
+      .map((p) => toProjectListItem(p))
+      .filter(Boolean)
+    const start = (page - 1) * size
+    const slice = all.slice(start, start + size)
+    resolve({
+      code: 200,
+      message: 'success',
+      data: slice
+    })
+  })
+}
+
+// 项目详情模拟
+function getProjectDetail(projectId) {
+  const id = Number(projectId)
+  let item = projectMockList.find((x) => x.projectId == projectId)
+  return new Promise((resolve) => {
+    if (!item) {
+      resolve({ code: 200, data: {} })
+      return
+    }
+    resolve({
+      code: 200,
+      data: {
+        ...item,
+        isFavored: mockFavoriteProjectIds.has(id)
+      }
+    })
+  })
 }
 
 function updateProject(projectId, params) {
@@ -396,6 +541,9 @@ export default {
   verifyByEmail,
   submitAuth,
   uploadFile,
+  getMyUploadedFiles,
+  getFileInfo,
+  deleteFile,
   updateUserProfile,
   createProject,
   getProjectList,
@@ -403,6 +551,8 @@ export default {
   getUserPublishedProjects,
   getMyTeams,
   getProjectDetail,
+  toggleFavoriteProject,
+  getMyFavoriteProjects,
   updateProject,
   applyProject,
   getMyTalentCard,

@@ -1545,6 +1545,10 @@ paths:
                           applyCount:
                             type: integer
                             example: 8
+                          isFavored:
+                            type: boolean
+                            description: 当前登录用户是否已收藏该项目（未登录时可省略）
+                            example: false
                           releaseTime:
                             type: string
                             format: date-time
@@ -1902,6 +1906,48 @@ paths:
                             description: 当前操作后的状态：true-已收藏 false-未收藏
                             example: true
           headers: {}
+      security:
+        - token: []
+  /favorite/project/list:
+    get:
+      summary: 分页获取我收藏的项目
+      deprecated: false
+      description: 当前登录用户收藏的项目卡片列表（与项目广场列表项结构一致，便于前端复用）
+      operationId: getMyFavoriteProjects
+      tags:
+        - 2. 项目广场
+        - 项目广场
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/ProjectListItem'
       security:
         - token: []
   /follow/{userId}:
@@ -5484,6 +5530,83 @@ paths:
                         type: string
                         example: 文件已删除
           headers: {}
+      security:
+        - token: []
+  /common/file/my:
+    get:
+      summary: 分页查询当前用户上传的文件
+      deprecated: false
+      description: |
+        按 `targetType` 查询本人已上传文件列表。`targetType=1` 表示用户简历（与上传接口 `/common/upload/file?targetType=1` 一致），用于个人中心「我的简历」展示。
+      operationId: getMyUploadedFiles
+      tags:
+        - 8. 通用接口
+        - 通用接口
+      parameters:
+        - name: targetType
+          in: query
+          required: true
+          description: 关联类型，与上传接口一致；简历请传 1
+          schema:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+              - 7
+              - 8
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+            default: Bearer {{token}}
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            fileId:
+                              type: integer
+                            fileName:
+                              type: string
+                            fileUrl:
+                              type: string
+                              nullable: true
+                            fileSize:
+                              type: integer
+                            fileType:
+                              type: string
+                            fileExtension:
+                              type: string
+                            targetType:
+                              type: integer
+                            createdTime:
+                              type: string
+                              format: date-time
       security:
         - token: []
   /user/notification/settings:

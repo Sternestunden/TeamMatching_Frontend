@@ -6,34 +6,27 @@
       <text class="edit-back-text">返回我发起的项目</text>
     </view>
 
-    <!-- 顶部步骤栏 -->
+    <!-- 顶部步骤：填写 → 预览确认 -->
     <view class="steps">
-      <view 
-        class="step-item" 
+      <view
+        class="step-item"
         :class="stepStatus[1] ? 'done' : currentStep === 1 ? 'active' : ''"
         @click="goStep(1)"
       >
-        <text v-if="stepStatus[1]">✓</text> 基本信息
+        <text v-if="stepStatus[1]">✓</text> 填写信息
       </view>
-      <view 
-        class="step-item" 
+      <view
+        class="step-item"
         :class="stepStatus[2] ? 'done' : currentStep === 2 ? 'active' : ''"
         @click="goStep(2)"
       >
-        <text v-if="stepStatus[2]">✓</text> 团队与角色
-      </view>
-      <view 
-        class="step-item" 
-        :class="stepStatus[3] ? 'done' : currentStep === 3 ? 'active' : ''"
-        @click="goStep(3)"
-      >
-        3.预览发布
+        <text v-if="stepStatus[2]">✓</text> 预览确认
       </view>
     </view>
 
     <!-- 步骤内容区域 -->
     <scroll-view class="content" scroll-y :scroll-top="scrollTop">
-      <!-- 步骤1：基本信息 -->
+      <!-- 单页：基本信息 + 团队与角色（原步骤 1、2 合并） -->
       <view v-if="currentStep === 1">
         <FormCard title="项目基本信息">
           <view class="form-item">
@@ -101,10 +94,7 @@
             </view>
           </view>
         </FormCard>
-      </view>
 
-      <!-- 步骤2：团队与角色 -->
-      <view v-if="currentStep === 2">
         <FormCard title="招募设置">
           <view class="form-item">
             <text class="label">截止时间<text class="req">*</text></text>
@@ -136,15 +126,15 @@
         </FormCard>
 
         <FormCard title="角色详情配置">
-          <view class="form-item" v-for="(item, idx) in form.roles" :key="idx">
+          <view class="form-item" v-for="(item, idx) in form.roles" :key="'req-' + idx">
             <text class="label">{{ item.name || '未命名角色' }} ({{ item.count || 0 }}人)</text>
             <textarea v-model="item.requirement" placeholder="具体要求：" class="textarea" />
           </view>
         </FormCard>
       </view>
 
-      <!-- 步骤3：预览发布 -->
-      <view v-if="currentStep === 3">
+      <!-- 预览（点击「发布」后自动进入） -->
+      <view v-if="currentStep === 2">
         <FormCard>
           <view class="preview-title">{{ form.name || '基于AI的校园组队平台' }}</view>
           <view class="preview-tags">
@@ -180,10 +170,14 @@
 
     <!-- 底部固定按钮 -->
     <view class="footer">
-      <button v-if="!editingProjectId" class="btn draft" @click="saveDraft">保存草稿</button>
-      <button class="btn next" @click="nextStep">
-        {{ currentStep === 3 ? (editingProjectId ? '保存修改' : '发布') : '下一步' }}
-      </button>
+      <template v-if="currentStep === 1">
+        <button v-if="!editingProjectId" class="btn draft" @click="saveDraft">保存草稿</button>
+        <button class="btn next" @click="goToPreview">{{ editingProjectId ? '预览并保存' : '发布' }}</button>
+      </template>
+      <template v-else>
+        <button class="btn draft" @click="backToEdit">返回修改</button>
+        <button class="btn next" @click="submitProject">{{ editingProjectId ? '保存修改' : '确认发布' }}</button>
+      </template>
     </view>
   </view>
 </template>
@@ -198,7 +192,7 @@ export default {
     return {
       currentStep: 1,
 	  scrollTop: 0,
-      stepStatus: { 1: false, 2: false, 3: false },
+      stepStatus: { 1: false, 2: false },
       form: {
         name: '',
         desc: '',
@@ -262,8 +256,7 @@ export default {
       if (!this.form.deadlineTime) {
         this.form.deadlineTime = '23:59'
       }
-      this.currentStep = draft.currentStep
-      this.stepStatus = draft.stepStatus
+      this.applyDraftNavigation(draft)
       uni.setNavigationBarTitle({ title: '新建项目' })
       uni.showToast({ title: '已加载草稿', icon: 'success' })
     })
@@ -280,49 +273,73 @@ export default {
   },
 
   methods: {
-    validateStep(step) {
-      if (step === 1) {
-        const name = this.form.name?.trim()
-        const desc = this.form.desc?.trim()
-        const category = this.form.category?.trim()
-        if (!name) return { ok: false, msg: '请填写项目名称' }
-        if (!desc) return { ok: false, msg: '请填写项目描述' }
-        if (!category) return { ok: false, msg: '请选择竞赛类别' }
-        if (!Array.isArray(this.form.roles) || this.form.roles.length === 0) {
-          return { ok: false, msg: '请至少添加一个角色需求' }
-        }
-        for (let i = 0; i < this.form.roles.length; i++) {
-          const r = this.form.roles[i] || {}
-          const roleName = String(r.name || '').trim()
-          const count = String(r.count || '').trim()
-          if (!roleName) return { ok: false, msg: `请填写角色名称 ${i + 1}` }
-          if (!count) return { ok: false, msg: `请填写角色 ${i + 1} 的招募数量` }
-          const n = Number(count)
-          if (!Number.isFinite(n) || n <= 0 || !Number.isInteger(n)) {
-            return { ok: false, msg: `角色 ${i + 1} 的招募数量需为正整数` }
-          }
-        }
-        return { ok: true }
+    /** 原步骤 1 + 2 合并后的校验 */
+    validateForm() {
+      const name = this.form.name?.trim()
+      const desc = this.form.desc?.trim()
+      const category = this.form.category?.trim()
+      if (!name) return { ok: false, msg: '请填写项目名称' }
+      if (!desc) return { ok: false, msg: '请填写项目描述' }
+      if (!category) return { ok: false, msg: '请选择竞赛类别' }
+      if (!Array.isArray(this.form.roles) || this.form.roles.length === 0) {
+        return { ok: false, msg: '请至少添加一个角色需求' }
       }
-
-      if (step === 2) {
-        const deadline = this.buildDeadlineRecruit()
-        if (!deadline) return { ok: false, msg: '请选择截止时间' }
-        if (this.form.isAnonymous && !String(this.form.contactInfo || '').trim()) {
-          return { ok: false, msg: '匿名发布请填写对外联系方式' }
+      for (let i = 0; i < this.form.roles.length; i++) {
+        const r = this.form.roles[i] || {}
+        const roleName = String(r.name || '').trim()
+        const count = String(r.count || '').trim()
+        if (!roleName) return { ok: false, msg: `请填写角色名称 ${i + 1}` }
+        if (!count) return { ok: false, msg: `请填写角色 ${i + 1} 的招募数量` }
+        const n = Number(count)
+        if (!Number.isFinite(n) || n <= 0 || !Number.isInteger(n)) {
+          return { ok: false, msg: `角色 ${i + 1} 的招募数量需为正整数` }
         }
-        return { ok: true }
       }
-
-      if (step === 3) {
-        const v1 = this.validateStep(1)
-        if (!v1.ok) return v1
-        const v2 = this.validateStep(2)
-        if (!v2.ok) return v2
-        return { ok: true }
+      const deadline = this.buildDeadlineRecruit()
+      if (!deadline) return { ok: false, msg: '请选择截止时间' }
+      if (this.form.isAnonymous && !String(this.form.contactInfo || '').trim()) {
+        return { ok: false, msg: '匿名发布请填写对外联系方式' }
       }
-
       return { ok: true }
+    },
+
+    /** 恢复草稿时的步骤（兼容旧版三步 wizard） */
+    applyDraftNavigation(draft) {
+      if (draft.wizard === 'v2' && Number(draft.currentStep) === 2) {
+        const v = this.validateForm()
+        if (v.ok) {
+          this.currentStep = 2
+          this.stepStatus = { 1: true, 2: true }
+          return
+        }
+      }
+      const cs = Number(draft.currentStep) || 1
+      if (cs >= 3) {
+        const v = this.validateForm()
+        if (v.ok) {
+          this.currentStep = 2
+          this.stepStatus = { 1: true, 2: true }
+          return
+        }
+      }
+      this.currentStep = 1
+      this.stepStatus = { 1: false, 2: false }
+    },
+
+    goToPreview() {
+      const v = this.validateForm()
+      if (!v.ok) {
+        uni.showToast({ title: v.msg, icon: 'none' })
+        return
+      }
+      this.stepStatus = { 1: true, 2: true }
+      this.currentStep = 2
+      this.scrollTop = 0
+    },
+
+    backToEdit() {
+      this.currentStep = 1
+      this.scrollTop = 0
     },
     onDeadlineDateChange(e) {
       this.form.deadlineDate = e.detail.value
@@ -338,11 +355,21 @@ export default {
       return `${d}T${t}:00`
     },
     goStep(step) {
-      if (this.stepStatus[step] || step <= this.currentStep) {
+      if (step === this.currentStep) return
+      if (step < this.currentStep) {
         this.currentStep = step
-		this.scrollTop = 0
-      } else {
-        uni.showToast({ title: '请先完成当前步骤', icon: 'none' })
+        this.scrollTop = 0
+        return
+      }
+      if (step === 2) {
+        const v = this.validateForm()
+        if (!v.ok) {
+          uni.showToast({ title: v.msg, icon: 'none' })
+          return
+        }
+        this.stepStatus = { 1: true, 2: true }
+        this.currentStep = 2
+        this.scrollTop = 0
       }
     },
 
@@ -419,7 +446,7 @@ export default {
       this.editingProjectId = null
       this.editingDraftId = null
       this.currentStep = 1
-      this.stepStatus = { 1: false, 2: false, 3: false }
+      this.stepStatus = { 1: false, 2: false }
       this.form = {
         name: '',
         desc: '',
@@ -492,7 +519,7 @@ export default {
         this.editingProjectId = projectId
         this.applyProjectDetailToForm(data)
         this.currentStep = 1
-        this.stepStatus = { 1: true, 2: true, 3: true }
+        this.stepStatus = { 1: true, 2: true }
         uni.setNavigationBarTitle({ title: '编辑项目' })
         uni.showToast({ title: '已进入编辑', icon: 'success' })
       } catch (err) {
@@ -512,8 +539,9 @@ export default {
       }
 
       const draftData = {
+        wizard: 'v2',
         currentStep: this.currentStep,
-        stepStatus: { ...this.stepStatus },
+        stepStatus: { 1: !!this.stepStatus[1], 2: !!this.stepStatus[2] },
         form: JSON.parse(JSON.stringify(this.form))
       }
 
@@ -541,7 +569,7 @@ export default {
       // 清空表单
       setTimeout(() => {
         this.currentStep = 1
-        this.stepStatus = { 1: false, 2: false, 3: false }
+        this.stepStatus = { 1: false, 2: false }
         this.form = {
           name: '',
           desc: '',
@@ -560,21 +588,6 @@ export default {
         }
         this.editingDraftId = null
       }, 1500)
-    },
-
-    nextStep() {
-      if (this.currentStep < 3) {
-        const v = this.validateStep(this.currentStep)
-        if (!v.ok) {
-          uni.showToast({ title: v.msg, icon: 'none' })
-          return
-        }
-        this.stepStatus[this.currentStep] = true
-        this.currentStep++
-		this.scrollTop = 0
-      } else {
-        this.submitProject()
-      }
     },
 
     // ======================
@@ -608,7 +621,7 @@ export default {
     },
 
     async submitProject() {
-      const v = this.validateStep(3)
+      const v = this.validateForm()
       if (!v.ok) {
         uni.showToast({ title: v.msg, icon: 'none' })
         return

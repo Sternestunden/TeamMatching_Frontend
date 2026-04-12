@@ -2,7 +2,7 @@
   <view class="card section-card">
     <view class="section-header">
       <view class="section-icon section-icon-tag"></view>
-      <text class="section-title">我的简历 / 技能树</text>
+      <text class="section-title">{{ title }}</text>
     </view>
     <view class="divider"></view>
     
@@ -35,6 +35,10 @@ export default {
     skills: {
       type: Array,
       default: () => [],
+    },
+    title: {
+      type: String,
+      default: '技能标签',
     },
   },
   methods: {
