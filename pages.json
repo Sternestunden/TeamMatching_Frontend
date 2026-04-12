@@ -27,7 +27,8 @@
 	  {
 	        "path": "pages/square/index",
 	        "style": {
-	          "navigationBarTitleText": "项目广场"
+	          "navigationBarTitleText": "项目广场",
+	          "onReachBottomDistance": 120
 	        }
 	  },
 	  {
@@ -130,6 +131,15 @@
 		      "path": "pages/user/my-favorites",
 		      "style": {
 		        "navigationBarTitleText": "我的收藏",
+		        "navigationBarBackgroundColor": "#ffffff",
+		        "navigationBarTextStyle": "black",
+		        "backgroundColor": "#f5f7fb"
+		      }
+		    },
+		    {
+		      "path": "pages/user/resume",
+		      "style": {
+		        "navigationBarTitleText": "我的简历",
 		        "navigationBarBackgroundColor": "#ffffff",
 		        "navigationBarTextStyle": "black",
 		        "backgroundColor": "#f5f7fb"

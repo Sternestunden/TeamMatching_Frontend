@@ -57,15 +57,29 @@
           </view>
           <text class="item-arrow">›</text>
         </view>
+        <view class="divider"></view>
+        <view class="list-item" @tap="goMyResume">
+          <view class="item-left item-left-stack">
+            <view class="item-icon-circle">
+              <text class="item-icon-text">简</text>
+            </view>
+            <view class="item-text-block">
+              <text class="item-text">我的简历</text>
+              <text class="item-sub">上传与管理附件，投递时可复用</text>
+            </view>
+          </view>
+          <text class="item-arrow">›</text>
+        </view>
       </view>
     </view>
 
-    <!-- 我的简历 / 技能树 -->
     <SkillTags
+      title="技能标签"
       :skills="skills"
       @add="openSkillModal"
       @view="onViewSkill"
-      @delete="onDeleteSkill" ></SkillTags>
+      @delete="onDeleteSkill"
+    />
 
     <!-- 系统设置 / 反馈建议 -->
     <view class="card section-card">
@@ -169,6 +183,7 @@ export default {
       }
     }
   },
+
   async onShow() {
     const token = uni.getStorageSync('access-token')
     if (!token) {
@@ -307,6 +322,17 @@ export default {
     goMyFavorites() {
       uni.navigateTo({
         url: '/pages/user/my-favorites'
+      })
+    },
+    goMyResume() {
+      const token = uni.getStorageSync('access-token')
+      if (!token) {
+        uni.showToast({ title: '请先登录', icon: 'none' })
+        setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 300)
+        return
+      }
+      uni.navigateTo({
+        url: '/pages/user/resume'
       })
     },
     goSettings() {

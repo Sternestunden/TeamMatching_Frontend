@@ -1,5 +1,11 @@
 <template>
-  <view class="detail-page" :class="{ 'detail-page--no-action': hideCommunicate }">
+  <view
+    class="detail-page"
+    :class="{
+      'detail-page--no-action': hideCommunicate,
+      'detail-page--applied': !hideCommunicate && hasAppliedToProject
+    }"
+  >
 
     <!-- 页面内容区（给 NavBar 和底部按钮留空间） -->
     <view class="detail-content">
@@ -37,15 +43,35 @@
         <text v-if="projectStatLine" class="meta-item">{{ projectStatLine }}</text>
       </view>
 
-      <!-- 第四行：发布人（匿名时不展示真实身份，不跳转个人页） -->
-      <view class="leader-info" :class="{ disabled: project.isAnonymous }" @click="goToLeaderPage">
-        <Avatar :src="project.leaderAvatar" size="48" />
-        <text class="leader-name">{{ project.leaderName }}</text>
-        <text v-if="!project.isAnonymous" class="arrow">></text>
+      <view v-if="!hideCommunicate && hasAppliedToProject" class="applied-top-banner">
+        <text class="applied-top-pill">已投递</text>
+        <text class="applied-top-msg">你已向本项目发起过沟通，可在底部再次投递更新意向</text>
       </view>
-      <view v-if="project.isAnonymous && project.contactInfo" class="anon-contact">
-        <text class="anon-contact-label">联系方式（匿名发布）</text>
-        <text class="anon-contact-text">{{ project.contactInfo }}</text>
+
+      <!-- 发起人 -->
+      <view class="publisher-card">
+        <view class="publisher-card-inner" @tap="goToLeaderPage">
+          <view class="publisher-avatar-ring">
+            <Avatar :src="project.leaderAvatar" :size="56" />
+          </view>
+          <view class="publisher-main">
+            <text class="publisher-kicker">发起人</text>
+            <text class="publisher-name">{{ project.leaderName }}</text>
+            <text v-if="!project.isAnonymous" class="publisher-sub">查看资料与公开动态</text>
+            <text v-else class="publisher-sub publisher-sub--muted">广场侧已隐藏真实身份与主页入口</text>
+          </view>
+          <view v-if="!project.isAnonymous" class="publisher-go">
+            <text class="publisher-go-text">主页</text>
+            <text class="publisher-go-arrow">›</text>
+          </view>
+        </view>
+        <view v-if="project.isAnonymous && project.contactInfo" class="publisher-anon-strip">
+          <view class="publisher-anon-strip-head">
+            <text class="publisher-anon-icon">✉</text>
+            <text class="publisher-anon-title">对外联系方式</text>
+          </view>
+          <text class="publisher-anon-body">{{ project.contactInfo }}</text>
+        </view>
       </view>
 
       <view v-if="project.projectFeatures" class="detail-section">
@@ -124,16 +150,24 @@
       </view>
     </view>
 
-    <!-- 底部固定按钮：立即沟通（发起人查看自己的项目时不展示） -->
-    <view v-if="!hideCommunicate" class="bottom-btn">
-      <button class="communicate-btn" @click="handleCommunicate">立即沟通</button>
+    <!-- 底部：立即沟通 / 已投递 + 再次投递（发起人不展示） -->
+    <view v-if="!hideCommunicate" class="bottom-action-bar">
+      <view v-if="hasAppliedToProject" class="applied-bottom-strip">
+        <text class="applied-bottom-pill">已投递</text>
+        <text class="applied-bottom-hint">可再次投递以补充说明或改选角色（以平台规则为准）</text>
+      </view>
+      <view class="bottom-btn-inner">
+        <button class="communicate-btn" @tap="handleCommunicate">
+          {{ hasAppliedToProject ? '再次投递' : '立即沟通' }}
+        </button>
+      </view>
     </view>
 
     <!-- 统一投递表单 -->
     <view v-if="showApplyPopup" class="apply-mask" @tap="closeApplyPopup">
       <view class="apply-panel" @tap.stop>
         <view class="apply-header">
-          <text class="apply-title">申请加入项目</text>
+          <text class="apply-title">{{ hasAppliedToProject ? '再次投递' : '申请加入项目' }}</text>
           <text class="apply-close" @tap="closeApplyPopup">✕</text>
         </view>
 
@@ -194,7 +228,7 @@
         <view class="apply-footer">
           <button class="apply-cancel" @tap="closeApplyPopup">取消</button>
           <button class="apply-submit" :disabled="applying" @tap="submitApplyFromPopup">
-            {{ applying ? '提交中...' : '提交申请' }}
+            {{ applying ? '提交中…' : (hasAppliedToProject ? '确认再次投递' : '提交申请') }}
           </button>
         </view>
       </view>
@@ -223,7 +257,7 @@ export default {
       if (this.profileResume.fileId) {
         return `当前可复用：${this.profileResume.fileName || '个人简历'}`
       }
-      return '个人主页暂无可复用简历，可改为“上传投递简历”'
+      return '开启「复用个人简历」后将从服务端拉取你在「我的简历」中的附件；也可关闭开关并上传本次投递简历'
     },
     /** 按换行分段，小程序里 <text> 的 pre-wrap 不稳定，用块级更可靠 */
     detailParagraphs() {
@@ -242,6 +276,8 @@ export default {
       projectId: '',
       /** 从「我发起的项目」进入时为 true，不展示「立即沟通」 */
       hideCommunicate: false,
+      /** 当前登录用户是否曾向本项目投递（本地记录 + 接口字段） */
+      hasAppliedToProject: false,
       /** 与 POST /favorite/project/{id} 返回的 data.isFavored 一致 */
       isFavored: false,
       favoriteLoading: false,
@@ -295,6 +331,7 @@ export default {
     this.hideCommunicate = hc === '1' || hc === 'true' || hc === true
     if (id) {
       this.projectId = String(id)
+      this.syncAppliedFromStorageOnly()
       this.getProjectDetailFromApi()
     } else {
       uni.showToast({
@@ -304,7 +341,42 @@ export default {
       })
     }
   },
+  onShow() {
+    if (this.hideCommunicate || !this.projectId) return
+    this.hasAppliedToProject = this.hasAppliedToProject || this.hasLocalApplied(this.projectId)
+  },
   methods: {
+    hasLocalApplied(projectId) {
+      if (!projectId) return false
+      const m = uni.getStorageSync('userAppliedProjectIds') || {}
+      return !!m[String(projectId)]
+    },
+    markProjectAppliedStorage(projectId) {
+      if (!projectId) return
+      const m = { ...(uni.getStorageSync('userAppliedProjectIds') || {}) }
+      m[String(projectId)] = { at: Date.now() }
+      uni.setStorageSync('userAppliedProjectIds', m)
+    },
+    syncAppliedFromStorageOnly() {
+      this.hasAppliedToProject = this.hasLocalApplied(this.projectId)
+    },
+    resolveAppliedFromApi(data) {
+      if (!data || typeof data !== 'object') return false
+      const keys = ['hasApplied', 'alreadyApplied', 'appliedByMe', 'myApplied', 'userApplied', 'hasApply', 'applied']
+      for (let i = 0; i < keys.length; i++) {
+        const v = data[keys[i]]
+        if (v === true || v === 1 || v === '1' || v === 'true') return true
+      }
+      const st = data.myApplicationStatus ?? data.applicationStatus ?? data.myApplyStatus
+      if (st != null && st !== '' && String(st) !== '0') return true
+      if (data.myApplication != null && typeof data.myApplication === 'object') return true
+      return false
+    },
+    syncAppliedStateFromDetail(data) {
+      const fromApi = this.resolveAppliedFromApi(data)
+      const fromLocal = this.hasLocalApplied(this.projectId)
+      this.hasAppliedToProject = !!(fromApi || fromLocal)
+    },
     levelLabel(level) {
       const n = Number(level)
       const m = { 1: '校级', 2: '省级', 3: '国家级' }
@@ -365,6 +437,7 @@ export default {
           data.isFavorite === true ||
           data.favored === true
         this.isFavored = !!favored
+        this.syncAppliedStateFromDetail(data)
         this.project = {
           id: data.projectId,
           name: data.name || '',
@@ -452,14 +525,14 @@ export default {
       this.openApplyPopup()
     },
 
-    async openApplyPopup() {
+    openApplyPopup() {
       this.applyForm.roleIndex = 0
       this.applyForm.applyReason = ''
       this.applyForm.customResumeFileId = null
       this.applyForm.customResumeFileName = ''
       this.applyForm.applicationAttachmentFileId = null
       this.applyForm.applicationAttachmentFileName = ''
-      await this.ensureProfileResume()
+      this.hydrateProfileResumeFromCache()
       this.applyForm.useProfileResume = !!this.profileResume.fileId
       this.showApplyPopup = true
     },
@@ -473,29 +546,76 @@ export default {
       this.applyForm.roleIndex = Number(index || 0)
     },
 
-    onUseProfileResumeChange(e) {
+    async onUseProfileResumeChange(e) {
       const checked = !!e?.detail?.value
-      if (checked && !this.profileResume.fileId) {
-        uni.showToast({ title: '暂无可复用的个人简历', icon: 'none' })
+      if (!checked) {
         this.applyForm.useProfileResume = false
         return
       }
-      this.applyForm.useProfileResume = checked
-    },
-
-    async ensureProfileResume() {
+      if (this.profileResume.fileId) {
+        this.applyForm.useProfileResume = true
+        return
+      }
       const localResume = uni.getStorageSync('userApplyResume') || {}
       if (localResume?.fileId) {
         this.profileResume.fileId = localResume.fileId
         this.profileResume.fileName = localResume.fileName || '我的简历'
+        this.applyForm.useProfileResume = true
         return
       }
       try {
-        const res = await api.getMyTalentCard()
-        const resume = res?.data?.resumeFile || {}
-        this.profileResume.fileId = resume.fileId || null
-        this.profileResume.fileName = resume.fileName || ''
-      } catch (e) {
+        uni.showLoading({ title: '加载简历…' })
+        const res = await api.getMyUploadedFiles({ targetType: 1, page: 1, size: 10 })
+        const list = this.normalizeUploadedFilesRes(res)
+        if (list.length && list[0]?.fileId) {
+          this.syncApplyResumeCacheFromList(list)
+          this.profileResume.fileId = list[0].fileId
+          this.profileResume.fileName = list[0].fileName || '我的简历'
+          this.applyForm.useProfileResume = true
+        } else {
+          uni.showToast({ title: '暂无可复用简历，请先在「我的简历」上传', icon: 'none' })
+          this.applyForm.useProfileResume = false
+        }
+      } catch (err) {
+        console.error(err)
+        uni.showToast({
+          title: err?.data?.message || err?.message || '加载失败',
+          icon: 'none'
+        })
+        this.applyForm.useProfileResume = false
+      } finally {
+        uni.hideLoading()
+      }
+    },
+
+    normalizeUploadedFilesRes(res) {
+      const d = res?.data
+      if (Array.isArray(d)) return d
+      if (d && Array.isArray(d.list)) return d.list
+      if (d && Array.isArray(d.records)) return d.records
+      return []
+    },
+
+    syncApplyResumeCacheFromList(list) {
+      if (!Array.isArray(list) || !list.length) {
+        uni.removeStorageSync('userApplyResume')
+        return
+      }
+      const latest = list[0]
+      uni.setStorageSync('userApplyResume', {
+        fileId: latest.fileId,
+        fileName: latest.fileName || '',
+        fileUrl: latest.fileUrl || ''
+      })
+    },
+
+    /** 仅读本地缓存，打开弹窗不请求接口；勾选「复用」时再拉列表 */
+    hydrateProfileResumeFromCache() {
+      const localResume = uni.getStorageSync('userApplyResume') || {}
+      if (localResume?.fileId) {
+        this.profileResume.fileId = localResume.fileId
+        this.profileResume.fileName = localResume.fileName || '我的简历'
+      } else {
         this.profileResume.fileId = null
         this.profileResume.fileName = ''
       }
@@ -621,6 +741,8 @@ export default {
         if (extra.customResumeFileId) payload.customResumeFileId = Number(extra.customResumeFileId)
         if (extra.applicationAttachmentFileId) payload.applicationAttachmentFileId = Number(extra.applicationAttachmentFileId)
         const res = await api.applyProject(this.projectId, payload)
+        this.markProjectAppliedStorage(this.projectId)
+        this.hasAppliedToProject = true
         uni.showToast({
           title: res?.data?.message || '投递成功',
           icon: 'success'
@@ -649,8 +771,39 @@ export default {
   padding-bottom: 80px; /* 给底部按钮预留空间 */
 }
 
+.detail-page--applied {
+  padding-bottom: 132px;
+}
+
 .detail-page--no-action {
   padding-bottom: 24px;
+}
+
+.applied-top-banner {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 0 4px;
+  padding: 10px 14px;
+  background: linear-gradient(90deg, #ecfdf5 0%, #f0fdf4 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+}
+.applied-top-pill {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #047857;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #d1fae5;
+}
+.applied-top-msg {
+  flex: 1;
+  font-size: 13px;
+  color: #166534;
+  line-height: 1.45;
 }
 
 /* 内容区 */
@@ -767,44 +920,107 @@ export default {
   border: 1px solid #d8def8;
 }
 
-/* 第四行：队长信息 */
-.leader-info {
+/* 发起人卡片 */
+.publisher-card {
+  margin: 8px 0 24px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+}
+.publisher-card-inner {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 12px;
-  padding: 15px 0;
-  border-top: 1px solid #f0f0f0;
-  border-bottom: 1px solid #f0f0f0;
-  margin-bottom: 20px;
+  gap: 14px;
+  padding: 16px 16px 16px 14px;
 }
-.leader-name {
-  font-size: 16px;
-  color: #000;
+.publisher-avatar-ring {
+  flex-shrink: 0;
+  padding: 3px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #355ac9 0%, #7c9ef0 50%, #c7d7ff 100%);
+  box-shadow: 0 2px 12px rgba(53, 90, 201, 0.25);
+}
+.publisher-main {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-.arrow {
-  font-size: 18px;
-  color: #999;
+.publisher-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  text-transform: uppercase;
 }
-.leader-info.disabled {
-  opacity: 0.95;
+.publisher-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.25;
 }
-.anon-contact {
-  margin: -12px 0 20px;
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 8px;
-}
-.anon-contact-label {
-  display: block;
+.publisher-sub {
   font-size: 12px;
-  color: #888;
-  margin-bottom: 6px;
+  color: #355ac9;
+  line-height: 1.45;
 }
-.anon-contact-text {
-  font-size: 15px;
-  color: #333;
-  line-height: 1.7;
+.publisher-sub--muted {
+  color: #94a3b8;
+}
+.publisher-go {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(53, 90, 201, 0.1);
+  border: 1px solid rgba(53, 90, 201, 0.2);
+}
+.publisher-go-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #355ac9;
+}
+.publisher-go-arrow {
+  font-size: 18px;
+  font-weight: 300;
+  color: #355ac9;
+  line-height: 1;
+  margin-top: -1px;
+}
+.publisher-anon-strip {
+  padding: 12px 16px 16px;
+  border-top: 1px dashed #cbd5e1;
+  background: rgba(255, 255, 255, 0.65);
+}
+.publisher-anon-strip-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.publisher-anon-icon {
+  font-size: 14px;
+  color: #d97706;
+}
+.publisher-anon-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #92400e;
+  letter-spacing: 0.02em;
+}
+.publisher-anon-body {
+  display: block;
+  font-size: 14px;
+  color: #334155;
+  line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -886,28 +1102,58 @@ export default {
   margin-bottom: 12px;
 }
 
-/* 底部固定按钮 */
-.bottom-btn {
+/* 底部操作区 */
+.bottom-action-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 12px 20px;
+  padding: 10px 20px 14px;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom));
   background-color: #fff;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #e8edf5;
+  box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.06);
+}
+.applied-bottom-strip {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.applied-bottom-pill {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #047857;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #d1fae5;
+}
+.applied-bottom-hint {
+  flex: 1;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.45;
+}
+.bottom-btn-inner {
+  display: flex;
+  justify-content: center;
 }
 .communicate-btn {
-  width: 80%;
+  width: 100%;
+  max-width: 400px;
   height: 48px;
-  background-color: #003399;
+  background: linear-gradient(180deg, #355ac9 0%, #2d4eb3 100%);
   color: #fff;
-  font-size: 18px;
-  border-radius: 4px;
+  font-size: 17px;
+  font-weight: 600;
+  border-radius: 12px;
   border: none;
-  left:-20px;
+  line-height: 48px;
 }
 .communicate-btn:active {
-  background-color: #002673;
+  opacity: 0.92;
 }
 
 .role-section {

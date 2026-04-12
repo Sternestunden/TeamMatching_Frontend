@@ -146,6 +146,43 @@ const api = {
     })
   },
 
+  /** 分页查询当前用户上传的文件（如 targetType=1 用户简历）GET /common/file/my */
+  getMyUploadedFiles(params = {}) {
+    if (config.useMock) {
+      return mockApi.getMyUploadedFiles(params)
+    }
+    return uni.$u.http.get('/common/file/my', {
+      params: {
+        targetType: params.targetType ?? 1,
+        page: params.page || 1,
+        size: params.size || 20
+      },
+      custom: { auth: true, catch: true }
+    })
+  },
+
+  /** 根据文件 ID 获取详情 GET /common/file/{fileId} */
+  getFileInfo(fileId) {
+    if (config.useMock) {
+      return mockApi.getFileInfo(fileId)
+    }
+    return uni.$u.http.get(`/common/file/${fileId}`, {
+      custom: { auth: true, catch: true }
+    })
+  },
+
+  /** 删除文件（软删除）DELETE /common/file/{fileId} */
+  deleteFile(fileId) {
+    if (config.useMock) {
+      return mockApi.deleteFile(fileId)
+    }
+    return uni.$u.http.delete(
+      `/common/file/${fileId}`,
+      {},
+      { custom: { auth: true, catch: true } }
+    )
+  },
+
   // ==================== 项目相关 ====================
   // 创建项目
   createProject(params) {
