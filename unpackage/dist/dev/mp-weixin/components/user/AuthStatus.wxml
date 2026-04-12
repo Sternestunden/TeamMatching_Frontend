@@ -1,0 +1,1 @@
+<view class="auth-badge" bindtap="{{a}}"><text class="auth-badge-text">已认证</text></view>

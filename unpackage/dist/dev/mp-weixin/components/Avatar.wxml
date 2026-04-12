@@ -1,0 +1,1 @@
+<view class="avatar-container data-v-c8a835f9" style="{{'width:' + c + ';' + ('height:' + d)}}"><image class="avatar-img data-v-c8a835f9" src="{{a}}" mode="aspectFill" binderror="{{b}}"></image></view>

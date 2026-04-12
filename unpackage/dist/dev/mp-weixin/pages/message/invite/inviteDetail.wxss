@@ -1,0 +1,148 @@
+
+/* 页面容器 */
+.invite-detail-page.data-v-6ff082f0 {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* 顶部导航栏 */
+.page-header.data-v-6ff082f0 {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+}
+.back-btn.data-v-6ff082f0 {
+  font-size: 18px;
+  color: #333;
+}
+.header-title.data-v-6ff082f0 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+.empty.data-v-6ff082f0 {
+  width: 18px;
+}
+
+/* 详情内容区 */
+.detail-content.data-v-6ff082f0 {
+  padding: 15px;
+}
+
+/* 邀请人信息 */
+.inviter-info.data-v-6ff082f0 {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 15px;
+}
+.info-content.data-v-6ff082f0 {
+  margin-left: 15px;
+}
+.inviter-name.data-v-6ff082f0 {
+  font-size: 18px;
+  color: #333;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+.inviter-role.data-v-6ff082f0 {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 项目信息卡片 */
+.project-card.data-v-6ff082f0 {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-bottom: 15px;
+}
+.card-title.data-v-6ff082f0 {
+  font-size: 14px;
+  color: #999;
+  display: block;
+  margin-bottom: 8px;
+}
+.project-name.data-v-6ff082f0 {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 8px;
+}
+.project-desc.data-v-6ff082f0 {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+  display: block;
+  margin-bottom: 8px;
+}
+.invite-time.data-v-6ff082f0 {
+  font-size: 12px;
+  color: #999;
+}
+
+/* 邀请说明 */
+.invite-desc.data-v-6ff082f0 {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-bottom: 80px; /* 给底部按钮留空间 */
+}
+.desc-label.data-v-6ff082f0 {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 8px;
+}
+.desc-content.data-v-6ff082f0 {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* 底部操作按钮 */
+.operate-buttons.data-v-6ff082f0 {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+  background-color: #fff;
+  border-top: 1px solid #eee;
+  box-sizing: border-box;
+}
+.reject-btn.data-v-6ff082f0 {
+  flex: 1;
+  height: 48px;
+  background-color: #f5f5f5;
+  color: #666;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+}
+.accept-btn.data-v-6ff082f0 {
+  flex: 1;
+  height: 48px;
+  background-color: #003399;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+}
+.accept-btn.data-v-6ff082f0:active {
+  background-color: #002673;
+}

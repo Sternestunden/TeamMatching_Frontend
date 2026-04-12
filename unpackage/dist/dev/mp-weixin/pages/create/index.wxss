@@ -1,0 +1,271 @@
+
+.create-page.data-v-1cd35ab0 {
+  min-height: 100vh;
+  background: #f5f7fb;
+  padding-bottom: 120rpx;
+}
+.edit-back-row.data-v-1cd35ab0 {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx 12rpx;
+  background: #fff;
+  border-bottom: 1rpx solid #e8e8ef;
+}
+.edit-back-icon.data-v-1cd35ab0 {
+  font-size: 44rpx;
+  line-height: 1;
+  color: #1677ff;
+  margin-right: 4rpx;
+  font-weight: 600;
+}
+.edit-back-text.data-v-1cd35ab0 {
+  font-size: 28rpx;
+  color: #1677ff;
+}
+
+/* 步骤栏 */
+.steps.data-v-1cd35ab0 {
+  display: flex;
+  padding: 20rpx;
+  background: #fff;
+}
+.step-item.data-v-1cd35ab0 {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  color: #1677ff;
+  background: #ffffff;
+  border: 1rpx solid #1677ff;
+  position: relative;
+  margin: 0 5rpx;
+}
+.step-item.active.data-v-1cd35ab0 {
+  background: #1677ff;
+  color: #fff;
+}
+.step-item.done.data-v-1cd35ab0 {
+  background: #1677ff;
+  color: #fff;
+}
+.step-item.done text.data-v-1cd35ab0 {
+  margin-right: 8rpx;
+}
+
+/* 内容 */
+.content.data-v-1cd35ab0 {
+  padding: 20rpx 0;
+  height: calc(100vh - 300rpx);
+}
+
+/* 表单项 */
+.form-item.data-v-1cd35ab0 {
+  margin-bottom: 30rpx;
+}
+.label.data-v-1cd35ab0 {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 10rpx;
+  display: block;
+}
+.input.data-v-1cd35ab0, .textarea.data-v-1cd35ab0, .select.data-v-1cd35ab0 {
+  border: 1rpx solid #eee;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  line-height: 80rpx;
+  background: #fff;
+}
+.textarea.data-v-1cd35ab0 {
+  min-height: 120rpx;
+  line-height: 1.5;
+  padding: 20rpx;
+}
+.select.data-v-1cd35ab0 {
+  color: #666;
+}
+.input.data-v-1cd35ab0 {
+	height:40px;
+	width: 100%;
+	padding: 0 12px;
+	box-sizing: border-box;
+	
+	border: 1px solid #ddd;
+	border-radius: 4px; 
+	outline: none;
+}
+.deadline-pickers.data-v-1cd35ab0 {
+  display: flex;
+  gap: 12px;
+}
+.picker-value.data-v-1cd35ab0 {
+  height: 40px;
+  line-height: 40px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+}
+.req.data-v-1cd35ab0 {
+  color: #ff4d4f;
+  margin-left: 4px;
+}
+/* 开关样式 */
+.switch-row.data-v-1cd35ab0 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.switch.data-v-1cd35ab0 {
+  width: 80rpx;
+  height: 40rpx;
+  border-radius: 20rpx;
+  background: #ccc;
+  position: relative;
+}
+.switch.on.data-v-1cd35ab0 {
+  background: #1677ff;
+}
+.switch-circle.data-v-1cd35ab0 {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  background: #fff;
+  position: absolute;
+  top: 2rpx;
+  left: 2rpx;
+  transition: all 0.3s;
+}
+.switch.on .switch-circle.data-v-1cd35ab0 {
+  left: 42rpx;
+}
+
+/* 添加按钮 */
+.add-row.data-v-1cd35ab0 {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20rpx;
+}
+.add-btn.data-v-1cd35ab0 {
+  font-size: 24rpx;
+  padding: 10rpx 20rpx;
+  background: #1677ff;
+  color: #fff;
+  border-radius: 8rpx;
+}
+
+/* 预览页面样式 */
+.preview-title.data-v-1cd35ab0 {
+  font-size: 48rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+}
+.preview-tags.data-v-1cd35ab0 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+.tag.data-v-1cd35ab0 {
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+}
+.tag-type.data-v-1cd35ab0 {
+  background: #e6f2ff;
+  color: #1677ff;
+}
+.tag-status.data-v-1cd35ab0 {
+  background: #f0f9eb;
+  color: #67c23a;
+}
+.tag-level.data-v-1cd35ab0 {
+  background: #fff7e6;
+  color: #d48806;
+}
+.tag-ptype.data-v-1cd35ab0 {
+  background: #f9f0ff;
+  color: #722ed1;
+}
+.preview-features.data-v-1cd35ab0,
+.preview-tags-line.data-v-1cd35ab0 {
+  font-size: 26rpx;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+}
+.preview-anon.data-v-1cd35ab0 {
+  font-size: 26rpx;
+  color: #d48806;
+  margin-bottom: 20rpx;
+}
+.preview-desc.data-v-1cd35ab0 {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 40rpx;
+}
+.recruit-section.data-v-1cd35ab0 {
+  border-top: 1rpx dashed #ccc;
+  padding-top: 30rpx;
+}
+.recruit-title.data-v-1cd35ab0 {
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+}
+.recruit-deadline.data-v-1cd35ab0 {
+  font-size: 28rpx;
+  margin-bottom: 30rpx;
+}
+.role-item.data-v-1cd35ab0 {
+  border: 1rpx solid #eee;
+  border-radius: 8rpx;
+  margin-bottom: 20rpx;
+}
+.role-header.data-v-1cd35ab0 {
+  display: flex;
+  justify-content: space-between;
+  padding: 20rpx;
+  background: #f5f5f5;
+  font-size: 28rpx;
+}
+.arrow.data-v-1cd35ab0 {
+  color: #999;
+}
+.role-req.data-v-1cd35ab0 {
+  padding: 20rpx;
+  font-size: 26rpx;
+  color: #666;
+}
+
+/* 底部固定按钮 */
+.footer.data-v-1cd35ab0 {
+  position: fixed;
+  left: -10px;
+  bottom: 48px;
+  width: 100%;
+  display: flex;
+  padding: 20rpx;
+  background: #fff;
+  box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
+}
+.btn.data-v-1cd35ab0 {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 10rpx;
+  font-size: 30rpx;
+  margin: 0 10rpx;
+}
+.draft.data-v-1cd35ab0 {
+  background: #f5f5f5;
+  color: #666;
+}
+.next.data-v-1cd35ab0 {
+  background: #1677ff;
+  color: #fff;
+}

@@ -1,0 +1,23 @@
+
+.avatar-container.data-v-c8a835f9 {
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+}
+.avatar-img.data-v-c8a835f9 {
+  width: 100%;
+  height: 100%;
+}
+/* 头像角标（比如在线状态） */
+.avatar-badge.data-v-c8a835f9 {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 1/5 * size;
+  height: 1/5 * size;
+  min-width: 8px;
+  min-height: 8px;
+  background-color: #00c853;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}

@@ -1,19 +1,197 @@
 {
-     
-    "dependencies": {
-     
-         
-    "moment": "^2.29.4",
-     
-         
-    "uview-plus": "^3.7.13"
-     
+	"easycom": {
+	    "autoscan": true,
+	    "custom": {
+	      "^u-(.*)": "uview-ui/components/u-$1/u-$1.vue",
+	      "^u-(.*)": "uview-plus/components/u-$1/u-$1.vue"
+	    }
+	  },
+  "pages": [
+	  {
+	        "path": "pages/login/login",
+	        "style": {
+	          "navigationBarTitleText": "登录"
+	        }
+	  },
+	  {
+	        "path": "pages/login/register",
+	        "style": {
+	          "navigationBarTitleText": "注册"
+	        }
+	  },
+	  {
+	        "path": "pages/square/index",
+	        "style": {
+	          "navigationBarTitleText": "项目广场"
+	        }
+	  },
+	  {
+			"path": "pages/community/index",
+			"style": {
+			  "navigationBarTitleText": "人才广场"
+			}
+	  },
+	  {
+			"path": "pages/community/userprofile",
+			"style": {
+			  "navigationBarTitleText": "个人资料"
+			}
+	  },
+	  {
+	      "path": "pages/create/index",
+	      "style": {
+	        "navigationBarTitleText": "新建项目"
+	      }
+      },
+	  {
+	      "path": "pages/message/index",
+	        "style": {
+	          "navigationBarTitleText": "消息"
+	        }
+	  },
+	  {
+	        "path": "pages/user/index",
+	        "style": {
+	          "navigationBarTitleText": "个人中心",
+	          "navigationBarBackgroundColor": "#ffffff",
+	          "navigationBarTextStyle": "black",
+	          "backgroundColor": "#f5f7fb"
+	        }
+	      },
+	{
+	  "path": "pages/index/index",
+	  "style": {
+		"navigationBarTitleText": "首页",
+		"navigationBarBackgroundColor": "#ffffff",
+		"navigationBarTextStyle": "black"
+	  }
+	},
+	{
+	      "path": "pages/projectDetail/index",
+	      "style": { "navigationBarTitleText": "项目详情" }
+	    },
+	{
+	      "path": "pages/message/invite/index",
+	      "style": { "navigationBarTitleText": "组队邀请" }
+	    },
+	{
+	      "path": "pages/message/notice/index",
+	      "style": { "navigationBarTitleText": "系统通知" }
+	},
+	{
+	      "path": "pages/message/invite/inviteDetail",
+	      "style": { "navigationBarTitleText": "邀请详情" }
+	    },
+	    {
+	      "path": "pages/message/notice/noticeDetail",
+	      "style": { "navigationBarTitleText": "通知详情" }
+	    },
+		{
+		      "path": "pages/message/chat/index",
+		      "style": { "navigationBarTitleText": "聊天" }
+		},
+	    {
+	      "path": "pages/user/profile",
+	      "style": {
+	        "navigationBarTitleText": "编辑资料",
+	        "navigationBarBackgroundColor": "#ffffff",
+	        "navigationBarTextStyle": "black",
+	        "backgroundColor": "#f5f7fb"
+	      }
+	    },
+	    {
+	      "path": "pages/user/info",
+	      "style": {
+	        "navigationBarTitleText": "个人信息",
+	        "navigationBarBackgroundColor": "#ffffff",
+	        "navigationBarTextStyle": "black",
+	        "backgroundColor": "#f5f7fb"
+	      }
+	    },
+	    {
+	      "path": "pages/user/auth",
+	      "style": {
+	        "navigationBarTitleText": "身份认证",
+	        "navigationBarBackgroundColor": "#ffffff",
+	        "navigationBarTextStyle": "black",
+	        "backgroundColor": "#f5f7fb"
+	      }
+	    },
+	    {
+	      "path": "pages/user/my-projects",
+	      "style": {
+	        "navigationBarTitleText": "我的项目",
+	        "navigationBarBackgroundColor": "#ffffff",
+	        "navigationBarTextStyle": "black",
+	        "backgroundColor": "#f5f7fb"
+	      }
+	    },
+	    {
+	      "path": "pages/user/my-favorites",
+	      "style": {
+	        "navigationBarTitleText": "我的收藏",
+	        "navigationBarBackgroundColor": "#ffffff",
+	        "navigationBarTextStyle": "black",
+	        "backgroundColor": "#f5f7fb"
+	      }
+	    },
+		{
+		  "path": "pages/settings/settings",
+		  "style": {
+		    "navigationBarTitleText": "系统设置"
+		  }
+		},
+		{
+		  "path": "pages/user/feedback",
+		  "style": {
+		    "navigationBarTitleText": "反馈"
+		  }
+		}
+  ],
+  "tabBar": {
+      "color": "#666666",
+      "selectedColor": "#007aff",
+      "backgroundColor": "#ffffff",
+      "borderStyle": "black",
+      "position": "bottom",
+      "height": "50px",
+      "list": [
+        {
+          "pagePath": "pages/square/index",
+          "text": "项目广场",
+          "iconPath": "static/icon/square.svg",
+          "selectedIconPath": "static/icon/square-a.png"
+        },
+        {
+          "pagePath": "pages/community/index",
+          "text": "人才广场",
+          "iconPath": "static/icon/community.svg",
+          "selectedIconPath": "static/icon/community-a.svg"
+        },
+        {
+          "pagePath": "pages/create/index",
+          "text": "新建项目",
+          "iconPath": "static/icon/new.svg",
+          "selectedIconPath": "static/icon/new-a.png"
+        },
+        {
+          "pagePath": "pages/message/index",
+          "text": "消息",
+          "iconPath": "static/icon/message.svg",
+          "selectedIconPath": "static/icon/message-a.svg"
+        },
+        {
+          "pagePath": "pages/user/index",
+          "text": "个人中心",
+          "iconPath": "static/icon/user.svg",
+          "selectedIconPath": "static/icon/user-a.png"
+        }
+      ]
     },
-     
-    "devDependencies": {
-     
-         
-    "sass": "^1.97.3"
-     
-    }
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uniapp对接Java后端",
+    "navigationBarBackgroundColor": "#f8f8f8",
+    "backgroundColor": "#f8f8f8"
+  }
 }

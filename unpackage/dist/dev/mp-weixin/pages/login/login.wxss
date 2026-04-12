@@ -1,0 +1,116 @@
+
+.page.data-v-e4e4508d {
+  min-height: 100vh;
+  background: #f5f7fb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.card.data-v-e4e4508d {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 16px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+}
+.title.data-v-e4e4508d {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 14px;
+}
+.field.data-v-e4e4508d {
+  margin-bottom: 14px;
+}
+.label.data-v-e4e4508d {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+}
+.input.data-v-e4e4508d {
+  height: 44px;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  background: #fff;
+}
+.btn.data-v-e4e4508d {
+  height: 44px;
+  border-radius: 10px;
+  line-height: 44px;
+  font-size: 16px;
+  margin-top: 6px;
+}
+.primary.data-v-e4e4508d {
+  background: #1677ff;
+  color: #fff;
+}
+.wx.data-v-e4e4508d {
+  background: #07c160;
+  color: #fff;
+  margin-top: 10px;
+}
+.split-line.data-v-e4e4508d {
+  position: relative;
+  margin: 14px 0 8px;
+  text-align: center;
+}
+.split-line.data-v-e4e4508d::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid #eceff5;
+}
+.split-text.data-v-e4e4508d {
+  position: relative;
+  z-index: 1;
+  padding: 0 10px;
+  background: #fff;
+  color: #9aa4b2;
+  font-size: 12px;
+}
+.wx-panel.data-v-e4e4508d {
+  margin-top: 8px;
+  border: 1px solid #e8f7ee;
+  background: #f8fffb;
+  border-radius: 12px;
+  padding: 12px;
+}
+.wx-panel-title.data-v-e4e4508d {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.wx-icon.data-v-e4e4508d {
+  margin-right: 6px;
+}
+.wx-title-text.data-v-e4e4508d {
+  font-size: 15px;
+  color: #1f7a45;
+  font-weight: 600;
+}
+.wx-desc.data-v-e4e4508d {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+}
+.wx.disabled.data-v-e4e4508d {
+  background: #c7cdd6;
+  color: #fff;
+}
+.row.data-v-e4e4508d {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+.link.data-v-e4e4508d {
+  color: #1677ff;
+  font-size: 14px;
+}
