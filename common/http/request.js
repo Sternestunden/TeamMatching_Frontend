@@ -1,4 +1,3 @@
-//此vm参数为页面的实例，可以通过它引用vuex中的变量
 import env from '@/common/config/env.js'
 import { scheduleRelogin, isUnauthorizedCode } from '@/common/http/authRedirect.js'
 

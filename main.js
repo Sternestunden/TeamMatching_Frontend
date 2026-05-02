@@ -5,7 +5,7 @@ import moment from 'moment';
 import config from '@/common/config/env.js'
 import api from "@/common/api"
 
-// ======================== Vue2 兼容（非核心，保留但标注废弃） ========================
+// ======================== Vue2 兼容 ========================
 // #ifndef VUE3
 import Vue from 'vue'
 import './uni.promisify.adaptor'
@@ -45,20 +45,20 @@ export function createApp() {
   // 2. 注册 uView UI 组件库（Vue3 正确方式）
   app.use(uviewPlus)
 
-  // 3. 挂载全局属性（Vue3 推荐使用 app.config.globalProperties）
+  // 3. 挂载全局属性
   app.config.globalProperties.$moment = moment;
   app.config.globalProperties.$config = config;
   app.config.globalProperties.$api = api;
 
-  // 4. 初始化请求配置（异步加载，避免阻塞应用启动）
-  import('@/common/http/request.js').then((requestModule) => {
-    // 兼容 ES Module 和 CommonJS 导出
-    const requestInit = requestModule.default || requestModule
-    requestInit(app)
-  }).catch(err => {
-    console.error('请求配置初始化失败：', err)
-  })
 
+  // 4. 初始化请求配置（异步加载，避免阻塞应用启动）
+    import('@/common/http/request.js').then(module => {
+        const requestInit = module.default || module
+        requestInit(app)
+      }).catch(err => {
+        console.error('请求配置初始化失败：', err)
+      })
+	
   return { app }
 }
 // #endif

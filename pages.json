@@ -159,12 +159,6 @@
 			  }
 			},
 			{
-			  "path": "pages/community/postDetail",
-			  "style": {
-			    "navigationBarTitleText": "帖子详情"
-			  }
-			},
-			{
 			  "path": "pages/userProfile/userProfile",
 			  "style": {
 			    "navigationBarTitleText": "用户主页"
@@ -187,7 +181,7 @@
         },
         {
           "pagePath": "pages/community/index",
-          "text": "公共社区",
+          "text": "人才广场",
           "iconPath": "static/icon/community.svg",
           "selectedIconPath": "static/icon/community-a.svg"
         },

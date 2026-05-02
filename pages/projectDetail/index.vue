@@ -410,9 +410,11 @@ export default {
     roleReqLines(text) {
       return String(text || '').split(/\r?\n/)
     },
+	
     async getProjectDetailFromApi() {
       try {
         const res = await api.getProjectDetail(this.projectId)
+		
         const data = res?.data
         if (data == null || data.projectId == null) {
           uni.showToast({ title: '加载失败', icon: 'none' })
@@ -491,6 +493,7 @@ export default {
           if (!wasFavored && this.isFavored) this.project.favoriteCount = fc + 1
           else if (wasFavored && !this.isFavored) this.project.favoriteCount = Math.max(0, fc - 1)
         }
+		console.log('✅ 项目详情接口联调成功', this.project)
       } catch (e) {
         console.error(e)
         uni.showToast({ title: e?.data?.message || e?.message || '操作失败', icon: 'none' })

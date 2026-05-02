@@ -5,7 +5,7 @@
       <view class="function-item" @click="goToInviteList">
         <view class="function-icon invite-icon">✉️</view>
         <text class="function-title">组队邀请</text>
-        <text class="function-badge" v-if="inviteCount > 0">{{ inviteCount }}条新邀请</text>
+        <!--<text class="function-badge" v-if="inviteCount > 0">{{ inviteCount }}条新邀请</text>-->
       </view>
       <view class="function-item" @click="goToNoticeList">
         <view class="function-icon notice-icon">🔔</view>
@@ -14,19 +14,16 @@
       </view>
     </view>
 
-    <!-- 2. 消息列表区 -->
+    <!-- 2. 消息列表区 
     <view class="message-list">
-      <!-- 单条消息 -->
       <view 
         class="message-item" 
         v-for="(item, index) in messageList" 
         :key="index"
         @click="goToChat(item)"
       >
-        <!-- 左侧头像 -->
         <Avatar :src="item.avatar" size="48" />
         
-        <!-- 中间内容区 -->
         <view class="message-content">
           <view class="message-header">
             <view class="name-row">
@@ -38,12 +35,13 @@
           <text class="message-desc">{{ item.content }}</text>
         </view>
         
-        <!-- 右侧新消息红点 -->
         <view class="message-badge" v-if="item.isNew">
           <text class="badge-text">{{ item.badgeCount || 1 }}</text>
         </view>
       </view>
     </view>
+	
+	-->
   </view>
 </template>
 
@@ -97,17 +95,20 @@ export default {
 
 /* 顶部功能按钮区 */
 .function-buttons {
-  display: flex;
-  gap: 15px;
+  /*display: flex;
+  gap: 15px;*/
   margin-bottom: 20px;
 }
 .function-item {
-  flex: 1;
-  background-color: #fff;
-  padding: 20px 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  text-align: center;
+    flex: 1;
+    background-color: #fff;
+    padding: 20px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    margin-top: 30px;
+    width: 80%;
+    margin-left: 20px;
 }
 .function-icon {
   width: 48px;

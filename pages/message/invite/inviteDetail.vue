@@ -1,106 +1,141 @@
 <template>
   <view class="invite-detail-page">
-
-    <!-- 详情内容区 -->
     <view class="detail-content">
-      <!-- 邀请人信息 -->
       <view class="inviter-info">
         <Avatar :src="inviteInfo.avatar" size="60" />
         <view class="info-content">
           <text class="inviter-name">{{ inviteInfo.name }}</text>
-          <text class="inviter-role">{{ inviteInfo.role }}</text>
+          <text class="inviter-role">{{ inviteInfo.role || '沟通对象' }}</text>
         </view>
       </view>
 
-      <!-- 项目信息卡片 -->
       <view class="project-card">
-        <text class="card-title">邀请加入项目</text>
+        <text class="card-title">关联项目</text>
         <text class="project-name">{{ inviteInfo.projectName }}</text>
         <text class="project-desc">{{ inviteInfo.projectDesc }}</text>
-        <text class="invite-time">邀请时间：{{ inviteInfo.inviteTime }}</text>
+        <text class="invite-time">时间：{{ inviteInfo.inviteTime || '--' }}</text>
       </view>
 
-      <!-- 邀请说明 -->
       <view class="invite-desc">
-        <text class="desc-label">邀请说明：</text>
+        <text class="desc-label">说明：</text>
         <text class="desc-content">{{ inviteInfo.inviteDesc || "暂无说明" }}</text>
       </view>
 
-      <!-- 操作按钮区（底部固定） -->
       <view class="operate-buttons">
-        <button class="reject-btn" @click="rejectInvite">拒绝</button>
-        <button class="accept-btn" @click="acceptInvite">接受</button>
+        <button class="accept-btn" @click="goProjectDetail">查看项目详情</button>
       </view>
     </view>
   </view>
 </template>
 
 <script>
+import api from '@/common/api/index.js'
+
 export default {
   data() {
     return {
+      projectId: null,
       inviteInfo: {
-        id: "",
-        avatar: "",
-        name: "李队长",
-        role: "项目队长",
-        projectName: "第十届互联网+创新大赛",
-        projectDesc: "AI图像识别 需要前端开发",
-        inviteTime: "2026-03-15 10:20",
-        inviteDesc: "希望你能加入负责前端开发，有vue经验优先"
+        id: '',
+        avatar: '',
+        name: '沟通对象',
+        role: '',
+        projectName: '项目',
+        projectDesc: '',
+        inviteTime: '',
+        inviteDesc: '',
+        projectId: null
       }
-    };
+    }
   },
-  onLoad(options) {
-    // 接收从列表页传递的邀请ID
-    this.inviteInfo.id = options.id;
-    // 模拟请求邀请详情（真实项目替换为接口）
-    this.fetchInviteDetail();
+  async onLoad(options) {
+    console.log('邀请详情页接收参数:', options)
+
+    // 1. 优先从 URL 参数获取 projectId
+    if (options?.projectId) {
+      this.projectId = Number(options.projectId) || null
+      console.log('从URL获取到 projectId:', this.projectId)
+    }
+
+    // 2. 解析 payload 获取更多信息
+    if (options?.payload) {
+      this.parsePayload(options.payload)
+    }
+
+    // 3. 如果有 projectId，调用接口获取详情
+    if (this.projectId) {
+      await this.fetchInviteDetail()
+    } else {
+      console.warn('缺少 projectId，无法加载详情')
+      uni.showToast({ title: '缺少项目ID', icon: 'none' })
+    }
   },
   methods: {
-    // 返回上一页
-    goBack() {
-      uni.navigateBack();
-    },
-    // 获取邀请详情
-    fetchInviteDetail() {
-      // 真实项目：根据ID请求接口
-      console.log("请求邀请详情，ID：", this.inviteInfo.id);
-    },
-    // 拒绝邀请
-    rejectInvite() {
-      uni.showModal({
-        title: "提示",
-        content: "确定拒绝该邀请吗？",
-        success: (res) => {
-          if (res.confirm) {
-            // 模拟接口请求
-            uni.showToast({ title: "已拒绝邀请", icon: "none" });
-            setTimeout(() => {
-              this.goBack(); // 拒绝后返回列表页
-            }, 1000);
-          }
+    parsePayload(payload) {
+      if (!payload) return
+      try {
+        const item = JSON.parse(decodeURIComponent(payload))
+        console.log('解析 payload 数据:', item)
+
+        // 保存 projectId 到 inviteInfo 中
+        if (item.projectId) {
+          this.inviteInfo.projectId = item.projectId
         }
-      });
-    },
-    // 接受邀请
-    acceptInvite() {
-      uni.showModal({
-        title: "提示",
-        content: "确定接受该邀请吗？",
-        success: (res) => {
-          if (res.confirm) {
-            // 模拟接口请求
-            uni.showToast({ title: "已接受邀请", icon: "success" });
-            setTimeout(() => {
-              this.goBack(); // 接受后返回列表页
-            }, 1000);
-          }
+
+        this.inviteInfo = {
+          ...this.inviteInfo,
+          id: item?.id || '',
+          avatar: item?.avatar || '',
+          name: item?.name || item?.nickname || '沟通对象',
+          role: item?.role || '申请/邀请相关用户',
+          projectName: item?.projectName || item?.name || this.inviteInfo.projectName,
+          inviteTime: item?.time || item?.createTime || '',
+          inviteDesc: item?.content || ''
         }
-      });
+      } catch (e) {
+        console.warn('解析详情参数失败', e)
+      }
+    },
+    async fetchInviteDetail() {
+      if (!this.projectId) return
+
+      uni.showLoading({ title: '加载中...' })
+      try {
+        const res = await api.getProjectDetail(this.projectId)
+        console.log('项目详情接口返回:', res)
+
+        if (res?.code === 200 && res?.data) {
+          const data = res.data
+          this.inviteInfo = {
+            ...this.inviteInfo,
+            projectName: data.name || this.inviteInfo.projectName,
+            projectDesc: data.projectIntro || data.projectFeatures || '暂无项目介绍',
+            inviteTime: data.releaseTime || this.inviteInfo.inviteTime
+          }
+        } else {
+          console.warn('项目详情获取失败:', res?.message)
+        }
+      } catch (e) {
+        console.error('获取项目详情失败', e)
+        uni.showToast({ title: '加载失败', icon: 'none' })
+      } finally {
+        uni.hideLoading()
+      }
+    },
+    goProjectDetail() {
+      console.log('准备跳转，当前 projectId:', this.projectId)
+
+      if (!this.projectId) {
+        uni.showToast({ title: '缺少项目ID', icon: 'none' })
+        return
+      }
+
+      uni.navigateTo({
+        url: `/pages/projectDetail/index?projectId=${this.projectId}`
+      })
     }
   }
-};
+}
 </script>
 
 <style scoped>

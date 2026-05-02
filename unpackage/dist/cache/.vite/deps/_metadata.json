@@ -1,19 +1,19 @@
 {
-  "hash": "e3f592ad",
-  "configHash": "7bbbb7f3",
+  "hash": "83be2afc",
+  "configHash": "57e977d0",
   "lockfileHash": "db2f1a83",
-  "browserHash": "f938d3f4",
+  "browserHash": "36c213fa",
   "optimized": {
     "moment": {
       "src": "../../../../../node_modules/moment/dist/moment.js",
       "file": "moment.js",
-      "fileHash": "d2183b3a",
+      "fileHash": "e30b737c",
       "needsInterop": false
     },
     "uview-plus": {
       "src": "../../../../../node_modules/uview-plus/index.js",
       "file": "uview-plus.js",
-      "fileHash": "f7264579",
+      "fileHash": "1b8848c5",
       "needsInterop": false
     }
   },

@@ -2,7 +2,7 @@ import {
   __require
 } from "./chunk-NAVY3LVQ.js";
 
-// ../../../../../Desktop/大一下/组队小程序项目/node_modules/moment/dist/moment.js
+// ../../../../Universitaet/Projekt/TeamMatching_Frontend/node_modules/moment/dist/moment.js
 var hookCallback;
 function hooks() {
   return hookCallback.apply(null, arguments);

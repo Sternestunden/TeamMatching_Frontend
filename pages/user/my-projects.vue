@@ -27,18 +27,17 @@
       <view v-if="loading" class="empty-container joined-loading">
         <text class="empty-text">加载中…</text>
       </view>
+
       <view v-if="!loading" class="joined-intro-card">
-        <text class="joined-intro-title">这里能看什么</text>
-        <text class="joined-intro-body">在广场「立即沟通」后的项目会出现在下方「沟通与申请」；队长通过后进入「已通过（在队）」。</text>
-      </view>
-      <view v-if="!loading && teamJoinedEmpty && teamCommEmpty && teamRejectedEmpty" class="empty-container">
-        <text class="empty-text">暂无团队相关记录</text>
-        <text class="empty-hint">在广场对感兴趣的项目「立即沟通」后，可在此查看申请进度与在队项目</text>
+        <text class="joined-intro-title">申请与团队</text>
+        <text class="joined-intro-body">点击项目卡片可进入项目详情，查看完整信息与进度。</text>
       </view>
 
-      <view v-if="!loading && !teamCommEmpty" class="team-section">
+      <view v-if="!loading" class="team-section">
         <text class="team-section-title">沟通与申请</text>
-        <text class="team-section-desc">等待队长处理或待你确认邀请</text>
+        <view v-if="teamCommEmpty" class="empty-container section-empty">
+          <text class="empty-text">暂无沟通或申请记录</text>
+        </view>
         <view
           v-for="(item, index) in teamCommunicating"
           :key="'c-' + (item.projectId || index)"
@@ -51,12 +50,15 @@
             <text class="status-text">{{ item.statusText }}</text>
           </view>
           <text v-if="item.subLine" class="joined-sub">{{ item.subLine }}</text>
+          <text class="joined-tip">点击查看项目详情</text>
         </view>
       </view>
 
-      <view v-if="!loading && !teamJoinedEmpty" class="team-section">
+      <view v-if="!loading" class="team-section">
         <text class="team-section-title">已通过（在队）</text>
-        <text class="team-section-desc">队长已通过你的申请，可进入项目详情与团队讨论</text>
+        <view v-if="teamJoinedEmpty" class="empty-container section-empty">
+          <text class="empty-text">暂无在队项目</text>
+        </view>
         <view
           v-for="(item, index) in teamJoined"
           :key="'j-' + (item.projectId || index)"
@@ -68,21 +70,7 @@
             <text class="status-text">{{ item.statusText }}</text>
           </view>
           <text v-if="item.subLine" class="joined-sub">{{ item.subLine }}</text>
-        </view>
-      </view>
-
-      <view v-if="!loading && !teamRejectedEmpty" class="team-section team-section-muted">
-        <text class="team-section-title">已结束</text>
-        <view
-          v-for="(item, index) in teamRejected"
-          :key="'r-' + (item.projectId || index)"
-          class="project-card joined-card status-rejected"
-          @tap="onViewJoined(item)"
-        >
-          <view class="joined-main">
-            <text class="project-title">{{ item.title }}</text>
-            <text class="status-text">{{ item.statusText }}</text>
-          </view>
+          <text class="joined-tip">点击查看项目详情</text>
         </view>
       </view>
     </view>
@@ -121,7 +109,6 @@ export default {
       launchedList: [],
       teamCommunicating: [],
       teamJoined: [],
-      teamRejected: [],
       draftedList: [],
       isNavigating: false
     }
@@ -133,9 +120,6 @@ export default {
     },
     teamJoinedEmpty() {
       return !this.teamJoined.length
-    },
-    teamRejectedEmpty() {
-      return !this.teamRejected.length
     }
   },
 
@@ -209,10 +193,9 @@ export default {
     async fetchJoined() {
       this.teamCommunicating = []
       this.teamJoined = []
-      this.teamRejected = []
       this.loading = true
       try {
-        const res = await api.getMyTeams()
+        const res = await api.getMyAppliedProjects()
         const data = res?.data || {}
 
         this.teamJoined = Array.isArray(data.joined)
@@ -248,15 +231,6 @@ export default {
           : []
 
         this.teamCommunicating = [...applying, ...invited]
-
-        this.teamRejected = Array.isArray(data.rejected)
-          ? data.rejected.map((x) => ({
-              projectId: x.projectId,
-              title: x.name,
-              statusClass: 'rejected',
-              statusText: this.rejectedStatusText(x.status)
-            }))
-          : []
       } catch (err) {
         console.error('获取我加入的项目失败：', err)
         uni.showToast({ title: '获取失败', icon: 'none' })
@@ -295,12 +269,6 @@ export default {
       }
       if (m[status] != null) return m[status]
       return '沟通中'
-    },
-
-    rejectedStatusText(status) {
-      const m = { 0: '已退出', 1: '申请未通过' }
-      if (m[status] != null) return m[status]
-      return '已结束'
     },
 
     loadDraftList() {
@@ -538,6 +506,13 @@ export default {
     color: #888;
     line-height: 1.4;
   }
+
+  .joined-tip {
+    display: block;
+    margin-top: 10rpx;
+    font-size: 22rpx;
+    color: #6a86d8;
+  }
   
   .joined-main {
     display: flex;
@@ -595,6 +570,12 @@ export default {
   .empty-container {
     padding: 48rpx 24rpx;
     text-align: center;
+  }
+
+  .section-empty {
+    background: #fff;
+    border-radius: 20rpx;
+    margin-bottom: 24rpx;
   }
 
   .launched-head {

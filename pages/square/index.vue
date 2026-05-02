@@ -3,44 +3,37 @@
     <view class="filter-header">
       <view class="filter-row1">
         <view class="sort-filter">
+          <text class="sort-item" :class="{ active: currentSort === 'recommend' }" @click="changeSort('recommend')">推荐</text>
           <text class="sort-item" :class="{ active: currentSort === 'latest' }" @click="changeSort('latest')">最新</text>
-          <text class="sort-item" :class="{ active: currentSort === 'hot' }" @click="changeSort('hot')">最热</text>
-          <text class="sort-item" :class="{ active: currentSort === 'deadline' }" @click="changeSort('deadline')">截止最近</text>
         </view>
         <view class="search-bar">
           <input class="search-input" type="text" placeholder="搜索项目/关键词" v-model="searchKeyword" @confirm="handleSearch" />
           <text class="search-icon" @click="handleSearch">🔍</text>
         </view>
+		<text class="filter-btn" @click="showFilter = true">筛选</text>
       </view>
 
       <view class="filter-row2">
-        <text class="category-item" :class="{ active: currentCategory === 'all' }" @click="changeCategory('all')">综合</text>
-        <text class="category-item" :class="{ active: currentCategory === 'internet+' }" @click="changeCategory('internet+')">互联网+</text>
-        <text class="category-item" :class="{ active: currentCategory === 'innovation' }" @click="changeCategory('innovation')">大创</text>
-        <text class="filter-btn" @click="showFilter = true">筛选</text>
+       <!-- <text class="category-item" :class="{ active: currentCategory === 'all' }" @click="changeCategory('all')">综合</text>-->
+       <!-- <text class="category-item" :class="{ active: currentCategory === 'internet+' }" @click="changeCategory('internet+')">互联网+</text>-->
+       <!--<text class="category-item" :class="{ active: currentCategory === 'innovation' }" @click="changeCategory('innovation')">大创</text>-->
+        
       </view>
     </view>
 
-    <Loading show="true" text="加载项目中..." v-if="loading && projectList.length === 0" />
+    <Loading show="true" text="加载项目中..." v-if="loading" />
 
-    <view class="project-list" v-if="!loading || projectList.length > 0">
-      <view class="empty-tip" v-if="filteredProjects.length === 0 && !loading && !loadingMore">
+    <view class="project-list" v-else>
+      <view class="empty-tip" v-if="filteredProjects.length === 0">
         <text>暂无符合条件的项目</text>
       </view>
 
-      <ProjectCard
-        v-for="(project, index) in filteredProjects"
+      <ProjectCard 
+        v-for="(project, index) in filteredProjects" 
         :key="project.id || index"
         :project="project"
         @click="goProjectDetail(project)"
       />
-
-      <view v-if="loadingMore" class="list-footer">
-        <text>加载更多…</text>
-      </view>
-      <view v-else-if="listFinished && projectList.length > 0" class="list-footer muted">
-        <text>已加载全部</text>
-      </view>
     </view>
 
     <!-- 🔥 筛选弹窗（侧拉） -->
@@ -143,16 +136,12 @@ export default {
     return {
       isNavigating: false,
       loading: false,
-      // 与接口 GET /project/list 的 sort 一致：latest | hot | deadline
-      currentSort: "latest",
+      currentSort: "recommend",
       currentCategory: "all",
       searchKeyword: "",
       showFilter: false,
       projectList: [],
       currentPage: 1,
-      pageSize: 10,
-      listFinished: false,
-      loadingMore: false,
       
       // 🔥 筛选相关数据
       activeFilterTab: "grade", // 当前激活的筛选标签
@@ -162,6 +151,7 @@ export default {
       techOptions: ["Vue", "React", "Python", "Java", "C++", "前端", "后端", "AI"],
       // 已选中的选项
       selectedGrades: [],
+	  
       selectedCompetitions: [],
       selectedTechs: []
     };
@@ -229,9 +219,14 @@ export default {
         );
       }
 
-      // 列表顺序由接口 sort 决定，此处仅做筛选映射，避免与后端排序冲突
-
-      console.log("最终要渲染的数据：", result);
+      // 排序
+      if (this.currentSort === "latest") {
+        result.sort((a, b) => new Date(b.submitTime) - new Date(a.submitTime));
+      } else {
+        result.sort(() => Math.random() - 0.5);
+      }
+      
+      console.log("最终要渲染的数据：", result); 
       return result;
     }
   },
@@ -239,18 +234,16 @@ export default {
   onLoad() {
     uni.$off('project:created')
     uni.$on('project:created', () => {
-      this.fetchProjects({ reset: true })
+      this.currentPage = 1
+      this.fetchProjects()
     })
-    this.fetchProjects({ reset: true })
+    this.fetchProjects();
   },
 
   onShow() {
     // 从其他页面返回时刷新，确保能看到最新发布的项目
-    this.fetchProjects({ reset: true })
-  },
-
-  onReachBottom() {
-    this.fetchProjects({ reset: false })
+    this.currentPage = 1
+    this.fetchProjects()
   },
 
   onUnload() {
@@ -294,13 +287,11 @@ export default {
     },
 
     buildProjectListQuery() {
-      const SORT_API = ['latest', 'hot', 'deadline']
-      const sort = SORT_API.includes(this.currentSort) ? this.currentSort : 'latest'
       const params = {
-        sort,
+        sort: this.currentSort,
         keyword: this.searchKeyword,
         page: this.currentPage || 1,
-        size: this.pageSize || 10
+        size: 10
       }
       // 接口 track 为可选；传 all 会导致后端筛不出数据，综合不传 track（空）
       if (this.currentCategory && this.currentCategory !== 'all') {
@@ -313,49 +304,25 @@ export default {
       return params
     },
 
-    normalizeListChunk(res) {
-      const d = res?.data
-      if (Array.isArray(d)) return d
-      if (d && Array.isArray(d.list)) return d.list
-      if (d && Array.isArray(d.records)) return d.records
-      return []
-    },
-
-    async fetchProjects({ reset = false } = {}) {
-      if (this.listFinished && !reset) return
-      if (this.loadingMore && !reset) return
-      if (this.loading && !reset) return
-
-      if (reset) {
-        this.currentPage = 1
-        this.projectList = []
-        this.listFinished = false
-        this.loading = true
-      } else {
-        this.loadingMore = true
-      }
-
+    async fetchProjects() {
+      this.loading = true;
       try {
-        const res = await api.getProjectList(this.buildProjectListQuery())
-        console.log('接口原始返回：', res)
-        let chunk = this.normalizeListChunk(res)
-        if (!Array.isArray(chunk)) chunk = []
+        const res = await api.getProjectList(this.buildProjectListQuery());
 
-        if (reset) {
-          this.projectList = chunk
+        console.log("接口原始返回：", res);
+
+        if (res.data && Array.isArray(res.data)) {
+          this.projectList = res.data;
+        } else if (res.data && res.data.list && Array.isArray(res.data.list)) {
+          this.projectList = res.data.list;
         } else {
-          const seen = new Set(this.projectList.map((x) => String(x?.projectId ?? '')))
-          const extra = chunk.filter((c) => c != null && !seen.has(String(c.projectId)))
-          this.projectList = [...this.projectList, ...extra]
+          console.warn("接口返回格式异常或无数据", res);
+          this.projectList = []
         }
 
-        if (chunk.length < this.pageSize) {
-          this.listFinished = true
-        } else {
-          this.currentPage = (this.currentPage || 1) + 1
-        }
       } catch (err) {
-        console.error('获取项目列表失败', err)
+        console.error("捕获到异常（可能是Code非0），尝试提取数据...", err);
+        // 给用户一个明确提示，避免“空列表但不知道原因”
         const msg =
           err?.data?.message ||
           err?.message ||
@@ -363,34 +330,32 @@ export default {
           '获取项目失败'
         uni.showToast({ title: msg, icon: 'none' })
 
-        let chunk = []
-        if (err?.data && Array.isArray(err.data)) {
-          chunk = err.data
-        } else if (err?.data?.data && Array.isArray(err.data.data)) {
-          chunk = err.data.data
-        }
-        if (chunk.length && reset) {
-          this.projectList = chunk
-        }
-        if (!reset) {
-          this.listFinished = true
+        if (err.data && Array.isArray(err.data)) {
+          console.log("从错误中抢救到了数据！");
+          this.projectList = err.data;
+        } else if (err.data && err.data.data && Array.isArray(err.data.data)) {
+           this.projectList = err.data.data;
+        } else {
+          this.projectList = []
         }
       } finally {
-        this.loading = false
-        this.loadingMore = false
+        this.loading = false;
       }
     },
 
     changeSort(t) {
-      this.currentSort = t
-      this.fetchProjects({ reset: true })
+      this.currentSort = t;
+      this.currentPage = 1;
+      this.fetchProjects();
     },
     changeCategory(t) {
-      this.currentCategory = t
-      this.fetchProjects({ reset: true })
+      this.currentCategory = t;
+      this.currentPage = 1;
+      this.fetchProjects();
     },
     handleSearch() {
-      this.fetchProjects({ reset: true })
+      this.currentPage = 1;
+      this.fetchProjects();
     },
 
     goProjectDetail(project) {
@@ -466,28 +431,29 @@ export default {
   position: fixed; top: 40px; left: 0; width: 92%;
   background: #fff; padding: 15px 15px;
   border-bottom: 1px solid #eee; z-index: 99;
+  height:30px;
 }
 .filter-row1 {
   display: flex; justify-content: space-between; align-items: center;
 }
 .sort-filter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  align-items: center;
-  max-width: 52%;
+  display: flex; gap: 20px;
 }
 .sort-item {
-  font-size: 14px;
-  color: #666;
-  white-space: nowrap;
+  font-size: 16px; color: #666;
 }
 .sort-item.active {
   color: #007aff; font-weight: bold; border-bottom: 2px solid #007aff;
 }
 .search-bar {
-  background: #f5f5f5; border-radius: 20px; padding: 5px 15px; width: 180px;
-  display: flex; align-items: center;
+  background: #f5f5f5;
+      border-radius: 20px;
+      padding: 5px 15px;
+      width: 45%;
+      display: flex;
+      align-items: center;
+      /* flex: 1; */
+      margin-left: 20px
 }
 .search-input {
   border: none; outline: none; background: transparent; flex: 1;
@@ -509,17 +475,6 @@ export default {
 }
 .empty-tip {
   text-align: center; padding: 50px 0; color: #999;
-}
-
-.list-footer {
-  text-align: center;
-  padding: 16px 0 28px;
-  font-size: 13px;
-  color: #888;
-}
-
-.list-footer.muted {
-  color: #bbb;
 }
 
 /* 筛选弹窗 */
